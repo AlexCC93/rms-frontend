@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { RoleGuard } from '@/components/shared/RoleGuard'
 import { AppShell } from '@/components/layout/AppShell'
@@ -29,9 +29,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function AppRouter() {
   const initializeAuth = useAuthStore((state) => state.initializeAuth)
 
-  useEffect(() => {
+  // Initialize synchronously so the store is hydrated before the first render
+  // evaluates ProtectedRoute. A useEffect would fire after the initial render,
+  // causing ProtectedRoute to see user=null and redirect to /login.
+  useState(() => {
     initializeAuth()
-  }, [initializeAuth])
+  })
 
   return (
     <Routes>

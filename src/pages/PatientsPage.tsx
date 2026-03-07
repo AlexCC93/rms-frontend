@@ -58,7 +58,7 @@ export function PatientsPage() {
         </div>
       </div>
 
-      {!patients || !Array.isArray(patients) || patients.length === 0 ? ( //TODO:No patients are found, but there are patients in the database.
+      {!patients || patients.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
           <p className="text-lg font-medium">No patients found</p>
           <p className="text-sm text-muted-foreground mt-1">
