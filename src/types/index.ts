@@ -214,11 +214,19 @@ export interface TimelineFilters {
 
 // Dashboard Stats
 export interface DashboardStats {
+  // Today's appointment breakdown
   today_appointments_total: number
   today_appointments_scheduled: number
   today_appointments_completed: number
   today_appointments_canceled: number
   today_appointments_no_show: number
+  // Longitudinal metrics
+  patients_this_month: number
+  patients_this_year: number
+  appointments_next_7_days: number
+  // Report metrics
+  reports_issued_this_month: number
+  reports_pending_finalization: number
   recent_draft_reports: RadiologyReport[]
 }
 

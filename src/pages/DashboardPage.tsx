@@ -3,7 +3,7 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
-import { Calendar, CheckCircle2, AlertCircle, Plus, Users, FileText } from 'lucide-react'
+import { Calendar, CheckCircle2, AlertCircle, Plus, Users, FileText, TrendingUp, Clock } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { format } from 'date-fns'
 import { useAuthStore } from '@/stores/authStore'
@@ -90,84 +90,127 @@ export function DashboardPage() {
           </Card>
         </div>
       ) : stats ? (
-        // Full dashboard with stats. //TODO: Implement in the backend and remove statsUnavailable fallback.
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Today
-                </CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.today_appointments_total}</div>
-                <p className="text-xs text-muted-foreground">
-                  Appointments scheduled for today
-                </p>
-              </CardContent>
-            </Card>
+          {/* ── Today's activity ── */}
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Today's Activity</h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Today</CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.today_appointments_total}</div>
+                  <p className="text-xs text-muted-foreground">Appointments scheduled for today</p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Scheduled
-                </CardTitle>
-                <Calendar className="h-4 w-4 text-blue-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.today_appointments_scheduled}</div>
-                <p className="text-xs text-muted-foreground">
-                  Awaiting completion
-                </p>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
+                  <Calendar className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.today_appointments_scheduled}</div>
+                  <p className="text-xs text-muted-foreground">Awaiting completion</p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Completed
-                </CardTitle>
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.today_appointments_completed}</div>
-                <p className="text-xs text-muted-foreground">
-                  Successfully completed
-                </p>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Completed</CardTitle>
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.today_appointments_completed}</div>
+                  <p className="text-xs text-muted-foreground">Successfully completed</p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Issues
-                </CardTitle>
-                <AlertCircle className="h-4 w-4 text-orange-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats.today_appointments_canceled + stats.today_appointments_no_show}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Canceled or no-show
-                </p>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Issues</CardTitle>
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {stats.today_appointments_canceled + stats.today_appointments_no_show}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Canceled or no-show</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
+          {/* ── Volume & throughput ── */}
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Volume & Throughput</h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Patients This Month</CardTitle>
+                  <Users className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.patients_this_month}</div>
+                  <p className="text-xs text-muted-foreground">Appointments in current month</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Patients This Year</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-indigo-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.patients_this_year}</div>
+                  <p className="text-xs text-muted-foreground">Annual throughput</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Upcoming (7 days)</CardTitle>
+                  <Clock className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.appointments_next_7_days}</div>
+                  <p className="text-xs text-muted-foreground">Scheduled visits ahead</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Reports Issued</CardTitle>
+                  <FileText className="h-4 w-4 text-purple-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.reports_issued_this_month}</div>
+                  <p className="text-xs text-muted-foreground">Finalized reports this month</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* ── Draft reports action list ── */}
           <Card>
             <CardHeader>
-              <CardTitle>Draft Reports Awaiting Finalization</CardTitle>
-              <CardDescription>
-                Recent reports that need to be finalized
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Draft Reports Awaiting Finalization</CardTitle>
+                  <CardDescription>Recent reports that need to be finalized</CardDescription>
+                </div>
+                {stats.reports_pending_finalization > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-700">
+                    {stats.reports_pending_finalization} pending
+                  </span>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {stats.recent_draft_reports.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No draft reports at this time.
-                </p>
+                <p className="text-sm text-muted-foreground">No draft reports at this time.</p>
               ) : (
                 <div className="space-y-3">
                   {stats.recent_draft_reports.map((report) => (
