@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePatient } from '@/hooks/usePatients'
 import { useAppointments } from '@/hooks/useAppointments'
+import { useTimeline } from '@/hooks/useTimeline'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ export function PatientDetailPage() {
     id ? { patient_id: id } : undefined,
     { enabled: !!id }
   )
+  const { data: timeline, isLoading: isLoadingTimeline } = useTimeline({ patient_id: id! })
 
   if (isLoadingPatient) {
     return <LoadingSpinner text="Loading patient..." />
@@ -191,13 +193,49 @@ export function PatientDetailPage() {
         </TabsContent>
 
         <TabsContent value="timeline">
-          <Card>
-            <CardContent className="p-12 text-center">
-              <p className="text-muted-foreground">
-                Timeline view will show imaging history for this patient
-              </p>
-            </CardContent>
-          </Card>
+          {isLoadingTimeline ? (
+            <LoadingSpinner text="Loading timeline..." />
+          ) : !timeline || timeline.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <p className="text-muted-foreground">No imaging history found for this patient</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {timeline.map((entry) => (
+                <Card key={entry.appointment_id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/appointments/${entry.appointment_id}`)}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <ModalityBadge modality={entry.modality} />
+                        <CardTitle className="text-base">{entry.study_description}</CardTitle>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={entry.appointment_status} type="appointment" />
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(entry.scheduled_at), 'MMM d, yyyy')}
+                        </span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  {entry.report_id && (
+                    <CardContent className="pt-0">
+                      <p className="text-sm font-medium text-muted-foreground mb-1">Impression</p>
+                      <div className="rounded-md bg-gray-50 p-3 text-sm whitespace-pre-wrap">
+                        {entry.report_impression}
+                      </div>
+                      {entry.finalized_at && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Finalized {format(new Date(entry.finalized_at), 'MMM d, yyyy HH:mm')}
+                        </p>
+                      )}
+                    </CardContent>
+                  )}
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

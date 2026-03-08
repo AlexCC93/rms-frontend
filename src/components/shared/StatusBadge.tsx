@@ -36,7 +36,8 @@ export function StatusBadge({ status, type }: StatusBadgeProps) {
     }
   }
 
-  const getLabel = (status: string) => {
+  const getLabel = (status: string | undefined) => {
+    if (!status) return '—'
     return status.replace('_', ' ').toUpperCase()
   }
 
