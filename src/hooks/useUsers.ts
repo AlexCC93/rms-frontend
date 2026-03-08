@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, UseQueryOptions } from '@tanstack/react-query'
 import { usersApi } from '@/api/users'
+import type { User } from '@/types'
 
 export const useUsers = () => {
   return useQuery({
@@ -8,10 +9,12 @@ export const useUsers = () => {
   })
 }
 
-export const useUser = (id: string | undefined) => {
+export const useUser = (id: string | undefined, options?: Partial<UseQueryOptions<User | undefined>>) => {
   return useQuery({
     queryKey: ['users', id],
     queryFn: () => usersApi.getUser(id!),
     enabled: !!id,
+    retry: false,
+    ...options,
   })
 }

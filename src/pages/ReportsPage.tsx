@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { useReports } from '@/hooks/useReports'
+import { useAppointment } from '@/hooks/useAppointments'
+import { usePatient } from '@/hooks/usePatients'
+import { useUser } from '@/hooks/useUsers'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 import { useNavigate } from 'react-router-dom'
@@ -15,7 +18,7 @@ import {
 import { format } from 'date-fns'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ModalityBadge } from '@/components/shared/ModalityBadge'
-import type { ReportStatus } from '@/types'
+import type { RadiologyReport, ReportStatus } from '@/types'
 import {
   Select,
   SelectContent,
@@ -23,6 +26,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+
+function ReportRow({ report, onClick }: { report: RadiologyReport; onClick: () => void }) {
+  const { data: appointment } = useAppointment(report.appointment_id)
+  const { data: patient } = usePatient(appointment?.patient_id)
+  const { data: radiologist } = useUser(report.radiologist_id, { throwOnError: false })
+
+  return (
+    <TableRow
+      className={`cursor-pointer ${report.status === 'draft' ? 'bg-yellow-50' : ''}`}
+      onClick={onClick}
+    >
+      <TableCell className="font-medium">
+        {patient ? `${patient.first_name} ${patient.last_name}` : '—'}
+      </TableCell>
+      <TableCell>
+        {appointment ? <ModalityBadge modality={appointment.modality} /> : '—'}
+      </TableCell>
+      <TableCell>
+        {radiologist?.full_name ?? '—'}
+      </TableCell>
+      <TableCell>
+        <StatusBadge status={report.status} type="report" />
+      </TableCell>
+      <TableCell>{report.version}</TableCell>
+      <TableCell>
+        {format(new Date(report.created_at), 'MMM d, yyyy HH:mm')}
+      </TableCell>
+      <TableCell>
+        {report.finalized_at
+          ? format(new Date(report.finalized_at), 'MMM d, yyyy HH:mm')
+          : '—'}
+      </TableCell>
+    </TableRow>
+  )
+}
 
 export function ReportsPage() {
   const navigate = useNavigate()
@@ -86,39 +124,11 @@ export function ReportsPage() {
             </TableHeader>
             <TableBody>
               {reports.map((report) => (
-                <TableRow
+                <ReportRow
                   key={report.id}
-                  className={`cursor-pointer ${
-                    report.status === 'draft' ? 'bg-yellow-50' : ''
-                  }`}
+                  report={report}
                   onClick={() => navigate(`/reports/${report.id}`)}
-                >
-                  <TableCell className="font-medium">
-                    {report.appointment?.patient
-                      ? `${report.appointment.patient.first_name} ${report.appointment.patient.last_name}`
-                      : 'Unknown'}
-                  </TableCell>
-                  <TableCell>
-                    {report.appointment && (
-                      <ModalityBadge modality={report.appointment.modality} />
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {report.radiologist?.full_name || 'Unknown'}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={report.status} type="report" />
-                  </TableCell>
-                  <TableCell>{report.version}</TableCell>
-                  <TableCell>
-                    {format(new Date(report.created_at), 'MMM d, yyyy HH:mm')}
-                  </TableCell>
-                  <TableCell>
-                    {report.finalized_at
-                      ? format(new Date(report.finalized_at), 'MMM d, yyyy HH:mm')
-                      : '—'}
-                  </TableCell>
-                </TableRow>
+                />
               ))}
             </TableBody>
           </Table>

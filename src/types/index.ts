@@ -123,13 +123,16 @@ export interface RadiologyReport {
 
 export interface RadiologyReportCreate {
   appointment_id: string
+  radiologist_id: string
   findings: string
   impression: string
+  parent_report_id?: string
 }
 
 export interface RadiologyReportUpdate {
   findings?: string
   impression?: string
+  radiologist_id?: string
 }
 
 // Timeline Entry

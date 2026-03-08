@@ -13,6 +13,7 @@ import { AppointmentDetailPage } from '@/pages/AppointmentDetailPage'
 import { AppointmentFormPage } from '@/pages/AppointmentFormPage'
 import { ReportsPage } from '@/pages/ReportsPage'
 import { ReportDetailPage } from '@/pages/ReportDetailPage'
+import { ReportFormPage } from '@/pages/ReportFormPage'
 import { TimelinePage } from '@/pages/TimelinePage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 
@@ -67,6 +68,14 @@ export default function AppRouter() {
           element={
             <RoleGuard roles={['admin', 'radiologist']}>
               <ReportsPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="reports/new"
+          element={
+            <RoleGuard roles={['admin', 'radiologist']}>
+              <ReportFormPage />
             </RoleGuard>
           }
         />

@@ -2,6 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useReport, useUpdateReport, useFinalizeReport, useCreateReport } from '@/hooks/useReports'
 import { useAppointment } from '@/hooks/useAppointments'
+import { usePatient } from '@/hooks/usePatients'
+import { usePhysician } from '@/hooks/usePhysicians'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 import { Button } from '@/components/ui/button'
@@ -10,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { getErrorMessage } from '@/api/client'
 import { format } from 'date-fns'
-import { ArrowLeft, Save, CheckCircle2, Edit, FileText } from 'lucide-react'
+import { ArrowLeft, Save, CheckCircle2, Edit, FileText, AlertTriangle } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ModalityBadge } from '@/components/shared/ModalityBadge'
 import { AuditTimestamp } from '@/components/shared/AuditTimestamp'
@@ -18,6 +20,14 @@ import { useToast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { useAuthStore } from '@/stores/authStore'
 import { canEditReport } from '@/utils/roleGuard'
+import { useUser, useUsers } from '@/hooks/useUsers'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export function ReportDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -29,9 +39,16 @@ export function ReportDetailPage() {
   const [findings, setFindings] = useState('')
   const [impression, setImpression] = useState('')
   const [confirmFinalizeOpen, setConfirmFinalizeOpen] = useState(false)
+  const [confirmAmendmentOpen, setConfirmAmendmentOpen] = useState(false)
+  const [selectedRadiologistId, setSelectedRadiologistId] = useState<string>('')
 
   const { data: report, isLoading, error } = useReport(id)
   const { data: appointment } = useAppointment(report?.appointment_id)
+  const { data: patient } = usePatient(appointment?.patient_id)
+  const { data: physician } = usePhysician(appointment?.referring_physician_id || undefined)
+  const { data: radiologist } = useUser(report?.radiologist_id)
+  const { data: allUsers } = useUsers()
+  const radiologists = allUsers?.filter((u) => u.role === 'radiologist') ?? []
   const updateReport = useUpdateReport()
   const finalizeReport = useFinalizeReport()
   const createReport = useCreateReport()
@@ -40,6 +57,7 @@ export function ReportDetailPage() {
     if (report) {
       setFindings(report.findings)
       setImpression(report.impression)
+      setSelectedRadiologistId(report.radiologist_id)
       setIsEditing(true)
     }
   }
@@ -50,7 +68,11 @@ export function ReportDetailPage() {
     try {
       await updateReport.mutateAsync({
         id,
-        data: { findings, impression },
+        data: {
+          findings,
+          impression,
+          radiologist_id: selectedRadiologistId || undefined,
+        },
       })
       toast({
         title: 'Report Saved',
@@ -91,13 +113,16 @@ export function ReportDetailPage() {
     try {
       const newReport = await createReport.mutateAsync({
         appointment_id: report.appointment_id,
+        radiologist_id: report.radiologist_id,
         findings: report.findings,
         impression: report.impression,
+        parent_report_id: report.id,
       })
       toast({
         title: 'Amendment Created',
-        description: 'A new draft report has been created for amendment',
+        description: 'The original report has been marked as amended. Edit the new draft to correct it.',
       })
+      setConfirmAmendmentOpen(false)
       navigate(`/reports/${newReport.id}`)
     } catch (err) {
       toast({
@@ -121,6 +146,7 @@ export function ReportDetailPage() {
   }
 
   const canEdit = canEditReport(user?.role) && report.status === 'draft'
+  const canAmend = canEditReport(user?.role) && report.status === 'final'
 
   return (
     <div className="space-y-6">
@@ -158,14 +184,46 @@ export function ReportDetailPage() {
               Edit Report
             </Button>
           )}
-          {report.status === 'final' && canEdit && (
-            <Button onClick={handleCreateAmendment}>
+          {report.status === 'final' && canAmend && (
+            <Button variant="outline" onClick={() => setConfirmAmendmentOpen(true)}>
               <FileText className="mr-2 h-4 w-4" />
               Create Amendment
             </Button>
           )}
         </div>
       </div>
+
+      {report.status === 'amended' && (
+        <div className="flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-4">
+          <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium text-yellow-800">This report has been superseded</p>
+            <p className="text-sm text-yellow-700 mt-1">
+              An amendment was issued for this report. The content below is the original signed version and is preserved for audit purposes.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {report.parent_report_id && (
+        <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <FileText className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium text-blue-800">Amendment — Version {report.version}</p>
+            <p className="text-sm text-blue-700 mt-1">
+              This report is an amendment of a previous version.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => navigate(`/reports/${report.parent_report_id}`)}
+          >
+            View Original
+          </Button>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -180,10 +238,16 @@ export function ReportDetailPage() {
                 appointment && navigate(`/patients/${appointment.patient_id}`)
               }
             >
-              {appointment?.patient
-                ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
-                : 'Unknown'}
+              {patient ? `${patient.first_name} ${patient.last_name}` : '—'}
             </p>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Status</p>
+            {appointment && (
+              <div className="mt-1">
+                <StatusBadge status={appointment.status} type="appointment" />
+              </div>
+            )}
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Modality</p>
@@ -195,15 +259,38 @@ export function ReportDetailPage() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Study Description</p>
-            <p className="text-base">{appointment?.study_description}</p>
+            <p className="text-base">{appointment?.study_description || '—'}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Date</p>
+            <p className="text-sm font-medium text-muted-foreground">Scheduled At</p>
             <p className="text-base">
-              {appointment &&
-                format(new Date(appointment.scheduled_at), 'MMM d, yyyy')}
+              {appointment
+                ? format(new Date(appointment.scheduled_at), 'MMMM d, yyyy HH:mm')
+                : '—'}
             </p>
           </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Duration</p>
+            <p className="text-base">
+              {appointment ? `${appointment.duration_minutes} minutes` : '—'}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Referring Physician</p>
+            <p className="text-base">
+              {physician
+                ? physician.full_name
+                : appointment?.referring_physician_id
+                ? appointment.referring_physician_id
+                : '—'}
+            </p>
+          </div>
+          {appointment?.clinical_indication && (
+            <div className="md:col-span-2">
+              <p className="text-sm font-medium text-muted-foreground">Clinical Indication</p>
+              <p className="text-base">{appointment.clinical_indication}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -219,7 +306,25 @@ export function ReportDetailPage() {
             <p className="text-sm font-medium text-muted-foreground mb-2">
               Radiologist
             </p>
-            <p className="text-base">{report.radiologist?.full_name || 'Unknown'}</p>
+            {isEditing ? (
+              <Select
+                value={selectedRadiologistId}
+                onValueChange={setSelectedRadiologistId}
+              >
+                <SelectTrigger className="w-[280px]">
+                  <SelectValue placeholder="Select a radiologist..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {radiologists.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="text-base">{radiologist?.full_name ?? '—'}</p>
+            )}
           </div>
 
           <div>
@@ -278,17 +383,16 @@ export function ReportDetailPage() {
           </div>
 
           {report.parent_report_id && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">
-                Previous Version
+            <div className="pt-2 border-t">
+              <p className="text-sm text-muted-foreground">
+                This is an amended version.{' '}
+                <span
+                  className="text-primary cursor-pointer hover:underline"
+                  onClick={() => navigate(`/reports/${report.parent_report_id}`)}
+                >
+                  View original report
+                </span>
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/reports/${report.parent_report_id}`)}
-              >
-                View Previous Version
-              </Button>
             </div>
           )}
         </CardContent>
@@ -302,6 +406,16 @@ export function ReportDetailPage() {
         confirmLabel="Finalize"
         onConfirm={handleFinalize}
         isLoading={finalizeReport.isPending}
+      />
+
+      <ConfirmDialog
+        open={confirmAmendmentOpen}
+        onOpenChange={setConfirmAmendmentOpen}
+        title="Create Amendment"
+        message="This will mark the current finalized report as amended and create a new draft for corrections. The original report is permanently preserved for audit purposes. Do you want to proceed?"
+        confirmLabel="Create Amendment"
+        onConfirm={handleCreateAmendment}
+        isLoading={createReport.isPending}
       />
     </div>
   )
