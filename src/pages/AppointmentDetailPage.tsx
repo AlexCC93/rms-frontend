@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppointment, useUpdateAppointmentStatus } from '@/hooks/useAppointments'
 import { usePatient } from '@/hooks/usePatients'
 import { usePhysician } from '@/hooks/usePhysicians'
+import { useUser } from '@/hooks/useUsers'
 import { useReports } from '@/hooks/useReports'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
@@ -10,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getErrorMessage } from '@/api/client'
 import { format } from 'date-fns'
-import { ArrowLeft, Edit, Plus } from 'lucide-react'
+import { ArrowLeft, Edit, Plus, UserRound } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ModalityBadge } from '@/components/shared/ModalityBadge'
 import { AuditTimestamp } from '@/components/shared/AuditTimestamp'
@@ -33,8 +34,16 @@ export function AppointmentDetailPage() {
   const { data: appointment, isLoading, error } = useAppointment(id)
   const { data: patient } = usePatient(appointment?.patient_id)
   const { data: physician } = usePhysician(appointment?.referring_physician_id || undefined)
+  const { data: assignedRadiologist } = useUser(appointment?.radiologist_id || undefined)
   const { data: reports } = useReports(id ? { appointment_id: id } : undefined)
   const updateStatus = useUpdateAppointmentStatus()
+
+  // Redirect radiologists to their appointments list on 403
+  useEffect(() => {
+    if ((error as any)?.response?.status === 403) {
+      navigate('/appointments', { replace: true })
+    }
+  }, [error, navigate])
 
   const handleStatusChange = (newStatus: AppointmentStatus) => {
     setPendingStatus(newStatus)
@@ -151,6 +160,18 @@ export function AppointmentDetailPage() {
           <div>
             <p className="text-sm font-medium text-muted-foreground">Referring Physician</p>
             <p className="text-base">{physician ? physician.full_name : (appointment.referring_physician_id ? appointment.referring_physician_id : '—')}</p>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              <UserRound className="h-3.5 w-3.5" /> Assigned Radiologist
+            </p>
+            <p className="text-base">
+              {assignedRadiologist
+                ? assignedRadiologist.full_name
+                : appointment.radiologist_id
+                ? appointment.radiologist_id.slice(0, 8) + '…'
+                : <span className="text-muted-foreground italic">Not yet assigned</span>}
+            </p>
           </div>
           <div className="md:col-span-2">
             <p className="text-sm font-medium text-muted-foreground">Clinical Indication</p>

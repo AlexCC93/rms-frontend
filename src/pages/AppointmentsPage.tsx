@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useAppointments } from '@/hooks/useAppointments'
 import { useQueries } from '@tanstack/react-query'
 import { patientsApi } from '@/api/patients'
-import { physiciansApi } from '@/api/physicians'
+import { usersApi } from '@/api/users'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 import { Button } from '@/components/ui/button'
@@ -48,10 +48,10 @@ export function AppointmentsPage() {
     return [...new Set(appointments.map(a => a.patient_id))]
   }, [appointments])
 
-  // Get unique physician IDs from appointments
-  const uniquePhysicianIds = useMemo(() => {
+  // Get unique radiologist IDs from appointments
+  const uniqueRadiologistIds = useMemo(() => {
     if (!appointments) return []
-    return [...new Set(appointments.map(a => a.referring_physician_id).filter(Boolean) as string[])]
+    return [...new Set(appointments.map(a => a.radiologist_id).filter(Boolean) as string[])]
   }, [appointments])
 
   // Fetch each unique patient
@@ -63,11 +63,11 @@ export function AppointmentsPage() {
     })),
   })
 
-  // Fetch each unique physician
-  const physicianQueries = useQueries({
-    queries: uniquePhysicianIds.map(physicianId => ({
-      queryKey: ['physicians', physicianId],
-      queryFn: () => physiciansApi.getPhysician(physicianId),
+  // Fetch each unique radiologist
+  const radiologistQueries = useQueries({
+    queries: uniqueRadiologistIds.map(radiologistId => ({
+      queryKey: ['users', radiologistId],
+      queryFn: () => usersApi.getUser(radiologistId),
       staleTime: 30000,
     })),
   })
@@ -83,21 +83,21 @@ export function AppointmentsPage() {
     return map
   }, [patientQueries, uniquePatientIds])
 
-  // Create a physician lookup map from the query results
-  const physicianMap = useMemo(() => {
+  // Create a radiologist lookup map from the query results
+  const radiologistMap = useMemo(() => {
     const map = new Map()
-    physicianQueries.forEach((query, index) => {
+    radiologistQueries.forEach((query, index) => {
       if (query.data) {
-        map.set(uniquePhysicianIds[index], query.data)
+        map.set(uniqueRadiologistIds[index], query.data)
       }
     })
     return map
-  }, [physicianQueries, uniquePhysicianIds])
+  }, [radiologistQueries, uniqueRadiologistIds])
 
   const isLoadingPatients = patientQueries.some(q => q.isLoading)
-  const isLoadingPhysicians = physicianQueries.some(q => q.isLoading)
+  const isLoadingRadiologists = radiologistQueries.some(q => q.isLoading)
 
-  if (isLoading || isLoadingPatients || isLoadingPhysicians) {
+  if (isLoading || isLoadingPatients || isLoadingRadiologists) {
     return <LoadingSpinner text="Loading appointments..." />
   }
 
@@ -170,16 +170,15 @@ export function AppointmentsPage() {
                 <TableHead>Modality</TableHead>
                 <TableHead>Study Description</TableHead>
                 <TableHead>Scheduled At</TableHead>
-                <TableHead>Duration</TableHead>
+                <TableHead>Radiologist</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Referring Physician</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {appointments.map((appointment) => {
                 const patient = patientMap.get(appointment.patient_id)
-                const physician = appointment.referring_physician_id 
-                  ? physicianMap.get(appointment.referring_physician_id)
+                const radiologist = appointment.radiologist_id
+                  ? radiologistMap.get(appointment.radiologist_id)
                   : null
                 return (
                   <TableRow
@@ -201,11 +200,10 @@ export function AppointmentsPage() {
                     <TableCell>
                       {format(new Date(appointment.scheduled_at), 'MMM d, yyyy HH:mm')}
                     </TableCell>
-                    <TableCell>{appointment.duration_minutes} min</TableCell>
+                    <TableCell>{radiologist ? radiologist.full_name : '—'}</TableCell>
                     <TableCell>
                       <StatusBadge status={appointment.status} type="appointment" />
                     </TableCell>
-                    <TableCell>{physician ? physician.full_name : '—'}</TableCell>
                   </TableRow>
                 )
               })}

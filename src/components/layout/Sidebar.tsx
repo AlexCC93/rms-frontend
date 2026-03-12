@@ -6,6 +6,7 @@ import {
   Calendar,
   FileText,
   Activity,
+  CalendarClock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -37,6 +38,12 @@ export function Sidebar() {
       path: '/reports',
       icon: FileText,
       roles: ['admin', 'radiologist'],
+    },
+    {
+      label: 'Schedules',
+      path: '/schedule',
+      icon: CalendarClock,
+      roles: ['admin'],
     },
   ]
 

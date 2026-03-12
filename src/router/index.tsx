@@ -16,6 +16,7 @@ import { ReportDetailPage } from '@/pages/ReportDetailPage'
 import { ReportFormPage } from '@/pages/ReportFormPage'
 import { TimelinePage } from '@/pages/TimelinePage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
+import { ScheduleManagementPage } from '@/pages/ScheduleManagementPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user)
@@ -89,6 +90,15 @@ export default function AppRouter() {
         />
 
         <Route path="timeline/:patientId" element={<TimelinePage />} />
+
+        <Route
+          path="schedule"
+          element={
+            <RoleGuard roles={['admin']}>
+              <ScheduleManagementPage />
+            </RoleGuard>
+          }
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

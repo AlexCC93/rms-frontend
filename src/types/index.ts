@@ -62,6 +62,7 @@ export interface Appointment {
   id: string
   patient_id: string
   referring_physician_id: string | null
+  radiologist_id: string | null
   modality: Modality
   study_description: string
   clinical_indication?: string
@@ -73,11 +74,13 @@ export interface Appointment {
   updated_at: string
   // Expanded relations (optional)
   patient?: Patient
+  radiologist?: User
 }
 
 export interface AppointmentCreate {
   patient_id: string
   referring_physician_id?: string
+  radiologist_id?: string
   modality: Modality
   study_description: string
   clinical_indication?: string
@@ -88,11 +91,57 @@ export interface AppointmentCreate {
 export interface AppointmentUpdate {
   patient_id?: string
   referring_physician_id?: string
+  radiologist_id?: string
   modality?: Modality
   study_description?: string
   clinical_indication?: string
   scheduled_at?: string
   duration_minutes?: number
+}
+
+// Radiologist Schedule
+export interface RadiologistSchedule {
+  id: string
+  radiologist_id: string
+  radiologist?: User
+  day_of_week: number // 0=Mon … 6=Sun
+  start_time: string // "HH:MM"
+  end_time: string   // "HH:MM"
+  slot_duration_minutes: number
+  modality: Modality | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface RadiologistScheduleCreate {
+  radiologist_id: string
+  day_of_week: number
+  start_time: string
+  end_time: string
+  slot_duration_minutes: number
+  modality?: Modality
+}
+
+export interface AvailableSlot {
+  radiologist_id: string
+  radiologist_name: string
+  start: string  // ISO datetime
+  end: string    // ISO datetime
+  slot_duration_minutes: number
+}
+
+export interface AvailableSlotsResponse {
+  date: string
+  modality: Modality | null
+  total_slots: number
+  slots: AvailableSlot[]
+}
+
+export interface ScheduleFilters {
+  radiologist_id?: string
+  day_of_week?: number
+  modality?: Modality
 }
 
 export interface AppointmentStatusUpdate {
@@ -248,6 +297,7 @@ export interface PatientFormData {
 export interface AppointmentFormData {
   patient_id: string
   referring_physician: string
+  radiologist_id: string
   modality: Modality
   study_description: string
   clinical_indication: string
