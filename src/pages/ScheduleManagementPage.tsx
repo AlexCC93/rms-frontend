@@ -179,12 +179,12 @@ export function ScheduleManagementPage() {
               <div className="space-y-2">
                 <Label>Modality (optional)</Label>
                 <Select
-                  value={form.watch('modality') || ''}
-                  onValueChange={(v) => form.setValue('modality', v as Modality | '')}
+                  value={form.watch('modality') || '__none__'}
+                  onValueChange={(v) => form.setValue('modality', v === '__none__' ? '' : v as Modality)}
                 >
                   <SelectTrigger><SelectValue placeholder="All modalities" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All modalities</SelectItem>
+                    <SelectItem value="__none__">All modalities</SelectItem>
                     <SelectItem value="XR">X-Ray (XR)</SelectItem>
                     <SelectItem value="CT">CT Scan</SelectItem>
                     <SelectItem value="US">Ultrasound (US)</SelectItem>
@@ -244,14 +244,14 @@ export function ScheduleManagementPage() {
             <div className="flex items-center gap-2">
               <Label className="text-sm text-muted-foreground">Filter by radiologist:</Label>
               <Select
-                value={filterRadiologistId}
-                onValueChange={setFilterRadiologistId}
+                value={filterRadiologistId || '__all__'}
+                onValueChange={(v) => setFilterRadiologistId(v === '__all__' ? '' : v)}
               >
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="All radiologists" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All radiologists</SelectItem>
+                  <SelectItem value="__all__">All radiologists</SelectItem>
                   {radiologists.map((r) => (
                     <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>
                   ))}

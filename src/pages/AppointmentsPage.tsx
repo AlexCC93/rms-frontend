@@ -33,10 +33,11 @@ export function AppointmentsPage() {
   const navigate = useNavigate()
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'all'>('all')
   const [modalityFilter, setModalityFilter] = useState<Modality | 'all'>('all')
+  const [patientFilter, setPatientFilter] = useState<string>('all')
+  const [radiologistFilter, setRadiologistFilter] = useState<string>('all')
 
   const filters = {
     ...(statusFilter !== 'all' && { status: statusFilter }),
-    ...(modalityFilter !== 'all' && { modality: modalityFilter }),
     limit: 1000, // Get up to 1000 appointments
   }
 
@@ -97,6 +98,16 @@ export function AppointmentsPage() {
   const isLoadingPatients = patientQueries.some(q => q.isLoading)
   const isLoadingRadiologists = radiologistQueries.some(q => q.isLoading)
 
+  const filteredAppointments = useMemo(() => {
+    if (!appointments) return []
+    return appointments.filter(a => {
+      if (modalityFilter !== 'all' && a.modality !== modalityFilter) return false
+      if (patientFilter !== 'all' && a.patient_id !== patientFilter) return false
+      if (radiologistFilter !== 'all' && a.radiologist_id !== radiologistFilter) return false
+      return true
+    })
+  }, [appointments, modalityFilter, patientFilter, radiologistFilter])
+
   if (isLoading || isLoadingPatients || isLoadingRadiologists) {
     return <LoadingSpinner text="Loading appointments..." />
   }
@@ -148,9 +159,49 @@ export function AppointmentsPage() {
             <SelectItem value="MAMMO">Mammography</SelectItem>
           </SelectContent>
         </Select>
+
+        <Select
+          value={patientFilter}
+          onValueChange={(value) => setPatientFilter(value)}
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter by patient" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Patients</SelectItem>
+            {uniquePatientIds.map(id => {
+              const patient = patientMap.get(id)
+              return (
+                <SelectItem key={id} value={id}>
+                  {patient ? `${patient.first_name} ${patient.last_name}` : id}
+                </SelectItem>
+              )
+            })}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={radiologistFilter}
+          onValueChange={(value) => setRadiologistFilter(value)}
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter by radiologist" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Radiologists</SelectItem>
+            {uniqueRadiologistIds.map(id => {
+              const radiologist = radiologistMap.get(id)
+              return (
+                <SelectItem key={id} value={id}>
+                  {radiologist ? radiologist.full_name : id}
+                </SelectItem>
+              )
+            })}
+          </SelectContent>
+        </Select>
       </div>
 
-      {!appointments || !Array.isArray(appointments) || appointments.length === 0 ? (
+      {filteredAppointments.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
           <p className="text-lg font-medium">No appointments found</p>
           <p className="text-sm text-muted-foreground mt-1">
@@ -175,7 +226,7 @@ export function AppointmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {appointments.map((appointment) => {
+              {filteredAppointments.map((appointment) => {
                 const patient = patientMap.get(appointment.patient_id)
                 const radiologist = appointment.radiologist_id
                   ? radiologistMap.get(appointment.radiologist_id)

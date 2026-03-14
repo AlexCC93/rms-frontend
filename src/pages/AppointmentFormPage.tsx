@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useEffect, useMemo, useState } from 'react'
@@ -41,7 +41,7 @@ export function AppointmentFormPage() {
 
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null)
-  const [modalityForSlots, setModalityForSlots] = useState<Modality | ''>('')
+  const [modalityForSlots, setModalityForSlots] = useState<Modality>('XR')
 
   const { data: appointment, isLoading: isLoadingAppointment } = useAppointment(isEditing ? id : undefined)
   const { data: patients, isLoading: isLoadingPatients } = usePatients({ limit: 1000 })
@@ -50,7 +50,7 @@ export function AppointmentFormPage() {
 
   const slotsParams = useMemo(() => {
     if (!selectedDate) return null
-    return { date: selectedDate, modality: modalityForSlots || undefined } as const
+    return { date: selectedDate, modality: modalityForSlots } as const
   }, [selectedDate, modalityForSlots])
 
   const {
@@ -259,19 +259,25 @@ export function AppointmentFormPage() {
               <div className="space-y-2">
                 <Label>Referring Physician</Label>
                 <div className="flex gap-2">
-                  <Select
-                    value={form.watch('referring_physician') || ''}
-                    onValueChange={(v) => form.setValue('referring_physician', v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a physician (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {physicians?.map((ph) => (
-                        <SelectItem key={ph.id} value={ph.id}>{ph.full_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    control={form.control}
+                    name="referring_physician"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={(v) => field.onChange(v)}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select a physician (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {physicians?.map((ph) => (
+                            <SelectItem key={ph.id} value={ph.id}>{ph.full_name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {form.watch('referring_physician') && (
                     <Button
                       type="button"
@@ -344,7 +350,7 @@ export function AppointmentFormPage() {
                   <LoadingSpinner text="Fetching available slots…" />
                 ) : slotsError ? (
                   <p className="text-sm text-destructive">Failed to load slots. Try refreshing.</p>
-                ) : slotsData && slotsData.total_slots === 0 ? (
+                ) : slotsData && slotsData.slots.length === 0 ? (
                   <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
                     No slots available on this date. Please try another date.
                   </div>

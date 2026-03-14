@@ -7,7 +7,8 @@ export const useAvailableSlots = (params: AvailableSlotsParams | null) => {
     queryKey: ['schedule', 'available-slots', params],
     queryFn: () => scheduleApi.getAvailableSlots(params!),
     enabled: !!params && !!params.date,
-    staleTime: 30_000, // 30 s — slots can be booked by others, keep relatively fresh
+    staleTime: 0,   // Always re-fetch; slots change as appointments are booked
+    gcTime: 0,      // Never serve from cache; must always hit the endpoint
   })
 }
 
