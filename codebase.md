@@ -1,6 +1,6 @@
 # RMS-lite Frontend — Codebase Reference
 
-**Stack:** React 18, TypeScript, Vite, TailwindCSS, shadcn/ui, TanStack Query v5, React Router v6, Zustand, React Hook Form + Zod.
+**Stack:** React 18, TypeScript, Vite, TailwindCSS, shadcn/ui, TanStack Query v5, React Router v6, Zustand, React Hook Form + Zod, Tiptap (rich-text editor).
 
 **Backend base URL:** `http://localhost:8000` (configured via `VITE_API_BASE_URL` env var). All API paths start with `/api/v1/`.
 
@@ -52,13 +52,19 @@ Single source of truth for all TypeScript interfaces and union types.
 - `ReportStatus` — `'draft' | 'final' | 'amended'`
 - `UserRole` — `'admin' | 'radiologist' | 'staff'`
 
-**Entity interfaces:** `User`, `Patient`, `Appointment`, `RadiologistSchedule`, `AvailableSlot`, `AvailableSlotsResponse`, `RadiologyReport`, `TimelineEntry`, `DashboardStats`
+**Entity interfaces:** `User`, `Patient`, `Appointment`, `RadiologistSchedule`, `AvailableSlot`, `AvailableSlotsResponse`, `RadiologyReport`, `ReportImage`, `ReportImageListResponse`, `TimelineEntry`, `DashboardStats`
 
 **CRUD payload types:** `PatientCreate`, `PatientUpdate`, `AppointmentCreate`, `AppointmentUpdate`, `AppointmentStatusUpdate`, `RadiologyReportCreate`, `RadiologyReportUpdate`, `RadiologistScheduleCreate`
 
-**Filter interfaces:** `PatientFilters` (`search`, `is_active`, `skip`, `limit`), `AppointmentFilters` (`patient_id`, `status`, `modality`, `from_date`, `to_date`, `skip`, `limit`), `ReportFilters` (`patient_id`, `appointment_id`, `status`, `radiologist_id`), `TimelineFilters` (`patient_id` required, plus optional `modality[]`, `from_date`, `to_date`)
+**Filter interfaces:** `PatientFilters` (`search`, `is_active`, `skip`, `limit`), `AppointmentFilters` (`patient_id`, `status`, `modality`, `from_date`, `to_date`, `skip`, `limit`), `ReportFilters` (`patient_id`, `appointment_id`, `status`, `radiologist_id`, `skip`, `limit`), `ScheduleFilters` (`radiologist_id`, `day_of_week`, `modality`), `TimelineFilters` (`patient_id` required, plus optional `modality[]`, `from_date`, `to_date`)
+
+**Form data types:** `PatientFormData`, `AppointmentFormData`, `ReportFormData` — typed counterparts used by React Hook Form.
 
 **Auth types:** `LoginRequest`, `LoginResponse`, `RefreshRequest`, `RefreshResponse`, `ApiError`
+
+**`ReportImage`** — `{ id, report_id, filename, content_type, file_size, uploaded_by_id, is_active, created_at }`. Returned by the report-images endpoints.
+
+**`ReportImageListResponse`** — `{ items: ReportImage[], total: number }`.
 
 > **Note:** `AvailableSlot` has a `slot_duration_minutes` field in the type definition, but the backend does **not** return it — compute it from `end - start` if needed.
 
@@ -114,24 +120,38 @@ CRUD for `/api/v1/appointments`. Always returns paginated `{ items, total }`. Me
 > **Known backend limitation:** The `modality` filter in `AppointmentFilters` is silently ignored by the backend. Modality filtering is done client-side in `AppointmentsPage`. Status filter (`status`) does work server-side.
 
 ### `src/api/users.ts`
-Read-only access to `/api/v1/users`. Methods: `getUsers()`, `getUser(id)` (returns `undefined` on 404 instead of throwing).
+Read-only access to `/api/v1/users`. Handles both paginated and flat array responses. Methods: `getUsers()`, `getUser(id)` (returns `undefined` on 404 instead of throwing).
 
 ### `src/api/physicians.ts`
-Read-only access to `/api/v1/physicians`. Defines its own `Physician` interface (`id`, `full_name`, `specialty?`, `contact_info?`). Methods: `getPhysicians()`, `getPhysician(id)`.
+Read-only access to `/api/v1/physicians`. Defines its own `Physician` interface (`id`, `full_name`, `specialty?`, `contact_info?`). Handles both paginated and flat array responses. Methods: `getPhysicians()`, `getPhysician(id)`.
 
 ### `src/api/reports.ts`
-CRUD + finalize for `/api/v1/reports`. Methods: `getReports(filters?)`, `getReport(id)`, `createReport(data)`, `updateReport(id, data)`, `finalizeReport(id)` (PATCH `.../finalize`), `deleteReport(id)`.
+CRUD + finalize + image management for `/api/v1/reports`.
+
+**Report CRUD:**
+- `getReports(filters?)` — paginated list
+- `getReport(id)`
+- `createReport(data)`
+- `updateReport(id, data)`
+- `finalizeReport(id)` — `PATCH /api/v1/reports/:id/finalize`
+- `deleteReport(id)`
+
+**Report image methods** (all under `/api/v1/reports/:reportId/images`):
+- `uploadImage(reportId, file: File)` — `POST` with `multipart/form-data`; returns `ReportImage`
+- `listImages(reportId)` — `GET`; returns `ReportImage[]`
+- `getImageBlob(reportId, imageId)` — `GET` with `responseType: 'blob'`; returns `Blob`
+- `deleteImage(reportId, imageId)` — `DELETE`
 
 ### `src/api/schedule.ts`
 Two concerns: radiologist schedule templates and available slot queries.
 - Also exports `AvailableSlotsParams` interface (`date: string`, `modality?: Modality`, `radiologist_id?: string`).
 - `getAvailableSlots(params)` → `GET /api/v1/schedule/available-slots` — returns only truly free slots; the backend already filters out booked ones.
-- `getSchedules(filters?)` → `GET /api/v1/schedule`
+- `getSchedules(filters?)` → `GET /api/v1/schedule` — handles both paginated `{ items, total }` and flat array responses.
 - `createSchedule(data)` → `POST /api/v1/schedule`
 - `deleteSchedule(id)` → `DELETE /api/v1/schedule/:id`
 
 ### `src/api/timeline.ts`
-`getTimeline(filters)` → `GET /api/v1/patients/:patient_id/timeline`. Normalises `status` → `appointment_status` on each entry (backend may return either field name).
+`getTimeline(filters)` → `GET /api/v1/patients/:patient_id/timeline`. Normalises `status` → `appointment_status` on each entry (backend may return either field name). Query params use `date_from`/`date_to` (not `from_date`/`to_date`). Modality array is serialised as a comma-separated string.
 
 ### `src/api/dashboard.ts`
 `getStats()` → `GET /api/v1/dashboard/stats`. Returns `DashboardStats`.
@@ -155,8 +175,8 @@ Exposes `login`, `loginAsync`, `isLoggingIn`, `loginError`, `logout`. On success
 ### `src/hooks/useAppointments.ts`
 - `useAppointments(filters?, options?)` — supports `enabled` flag (used in patient detail)
 - `useAppointment(id)`
-- `useCreateAppointment()` — invalidates `['appointments']` and `['dashboard']`
-- `useUpdateAppointment()` — invalidates list, single entry, dashboard
+- `useCreateAppointment()` — invalidates **and refetches** `['appointments']`, invalidates `['dashboard']`
+- `useUpdateAppointment()` — invalidates **and refetches** list, invalidates single entry and dashboard
 - `useUpdateAppointmentStatus()` — invalidates appointments, dashboard, and `['timeline']`
 - `useDeleteAppointment()` — invalidates list and dashboard
 
@@ -169,22 +189,36 @@ Exposes `login`, `loginAsync`, `isLoggingIn`, `loginError`, `logout`. On success
 - `useUser(id, options?)` — single user; `retry: false` by default to handle 404 gracefully
 
 ### `src/hooks/useReports.ts`
+**Report hooks:**
 - `useReports(filters?)`, `useReport(id)`
-- `useCreateReport()`, `useUpdateReport()`, `useFinalizeReport()` — all invalidate `['reports']`, `['dashboard']`, and `['timeline']`
-- (no delete mutation exposed — delete is on `reportsApi` but not hooked)
+- `useCreateReport()` — invalidates `['reports']`, `['dashboard']`, `['timeline']`
+- `useUpdateReport()` — invalidates list, single entry, dashboard, timeline
+- `useFinalizeReport()` — invalidates list, single entry, dashboard, timeline
+- `useDeleteReport()` — invalidates `['reports']`, `['dashboard']`
+
+**Report image hooks:**
+- `useReportImages(reportId)` — key `['reportImages', reportId]`; fetches the full image list for a report
+- `useReportImageBlob(reportId, imageId)` — key `['reportImageBlob', reportId, imageId]`; fetches the image as a blob and returns an object URL (`staleTime: 5min`, `gcTime: 5min`)
+- `useUploadReportImage()` — mutation; on success invalidates `['reportImages', reportId]`
+- `useDeleteReportImage()` — mutation; on success invalidates `['reportImages', reportId]`
 
 ### `src/hooks/useSchedule.ts`
-- `useAvailableSlots(params | null)` — enabled only when `params.date` is set. `staleTime: 0`, `gcTime: 0` so the backend is always hit fresh (booked slots must never be served from cache).
-- `useSchedules(filters?)`, `useCreateSchedule()`, `useDeleteSchedule()` — manage recurring schedule templates
+- `useAvailableSlots(params | null)` — key `['schedule', 'available-slots', params]`; enabled only when `params.date` is set. `staleTime: 0`, `gcTime: 0` so the backend is always hit fresh (booked slots must never be served from cache).
+- `useSchedules(filters?)` — key `['schedule', 'templates', filters]`
+- `useCreateSchedule()` — invalidates `['schedule', 'templates']`
+- `useDeleteSchedule()` — invalidates `['schedule', 'templates']`
 
 ### `src/hooks/useTimeline.ts`
-`useTimeline(filters)` — enabled only when `filters.patient_id` is truthy.
+`useTimeline(filters)` — key `['timeline', filters]`; enabled only when `filters.patient_id` is truthy.
 
 ### `src/hooks/useDashboard.ts`
-`useDashboardStats()` — polls every 60 seconds. Stops polling and stops retrying if the backend returns 404 (endpoint may not exist).
+`useDashboardStats()` — key `['dashboard', 'stats']`; polls every 60 seconds. Stops polling and stops retrying if the backend returns 404 (endpoint may not exist).
 
 ### `src/hooks/useDebounce.ts`
 Generic `useDebounce<T>(value, delay)` — delays propagation of a value by `delay` ms. Used in `PatientsPage` for the search input.
+
+### `src/hooks/useResolvedHtml.ts`
+`useResolvedHtml(rawHtml)` — takes raw HTML containing `/api/v1/reports/.../images/...` src paths, fetches each image with the user's Bearer token via `resolveApiImageSrcs`, and returns the HTML with all paths swapped to ephemeral `blob:` URLs safe for use in `dangerouslySetInnerHTML`. Returns the original string synchronously on the first render, then the resolved version once all fetches complete. Uses a cancellation flag to avoid state updates after unmount.
 
 ### `src/hooks/use-toast.ts`
 shadcn/ui toast state manager. Exposes `useToast()` which returns `{ toast, dismiss, toasts }`. Internal reducer manages a queue (limit: 1 visible toast at a time).
@@ -246,15 +280,17 @@ Read-only detail view for one appointment. Resolves patient, referring physician
 List of radiology reports, filterable by status. Each row is rendered by a `ReportRow` sub-component that independently fetches and resolves appointment → patient and radiologist names. Draft reports are highlighted with a yellow background.
 
 ### `src/pages/ReportFormPage.tsx`
-Create a new radiology report. Requires `?appointment_id=` query param. Displays appointment context (patient, modality, date) above the findings/impression text areas. Auto-assigns `radiologist_id` to the currently logged-in user.
+Create a new radiology report. Requires `?appointment_id=` query param. Displays appointment context (patient, modality, date) above the findings/impression rich-text editors (`RichTextEditor`). Auto-assigns `radiologist_id` to the currently logged-in user.
 
 ### `src/pages/ReportDetailPage.tsx`
 Full report viewer and editor. Features:
-- Inline edit mode (findings + impression text areas) with save
+- Inline edit mode — findings and impression use `RichTextEditor` (with `reportId` prop so images are uploaded immediately to the backend)
+- Report images panel via `ReportImageManager`
 - Radiologist re-assignment dropdown (admin/radiologist only)
-- Finalize (PATCH `.../finalize`) with confirmation dialog
+- Finalize (`PATCH .../finalize`) with confirmation dialog
 - Amend — creates a new `draft` report linked via `parent_report_id`
 - Version history badge and parent report reference
+- Read-only view uses `useResolvedHtml` to display embedded images fetched with auth as `blob:` URLs
 
 ### `src/pages/TimelinePage.tsx`
 Chronological imaging timeline for a patient (`:patientId` URL param). Each entry is a `Card` showing modality badge, study description, appointment status badge, date, and — if available — the report impression and finalized date.
@@ -305,6 +341,39 @@ Renders a destructive `Alert` with an icon, optional title (default "Error"), an
 **`src/components/shared/LoadingSpinner.tsx`**
 Centered spinner with optional text label. Three sizes: `sm`, `md` (default), `lg`.
 
+**`src/components/shared/RichTextEditor.tsx`**
+Tiptap-based rich text editor used for report findings and impression fields.
+
+Props:
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `initialValue` | `string` | `''` | Initial HTML. Changing this prop after mount does **not** reset the editor — use `key` to remount. |
+| `onChange` | `(html: string) => void` | — | Called on every content change with the current HTML. |
+| `placeholder` | `string` | `'Start typing…'` | Placeholder text. |
+| `readOnly` | `boolean` | `false` | Disables editing and hides the toolbar. |
+| `reportId` | `string` | — | If provided, images are uploaded to the backend immediately (`POST /api/v1/reports/:id/images`). Otherwise images are embedded as base64 data URIs. |
+| `minHeight` | `string` | `'180px'` | CSS min-height for the editor area. |
+
+Supported image formats: JPEG, PNG, GIF, WebP, DICOM (max 10 MB). Images can be inserted via toolbar button, paste from clipboard, or drag-and-drop onto the editor. When `reportId` is set, images are uploaded to the backend, a `blob:` URL is created locally for immediate display, and `registerBlobMapping` is called so `restoreApiImageSrcs` can convert the blob URL back to the stable API path before saving.
+
+Tiptap extensions used: `StarterKit` (without blockquote, code, codeBlock, horizontalRule), `ImageExtension` (inline=false, allowBase64=true), `TextAlign` (heading + paragraph), `Placeholder`.
+
+Toolbar controls: undo/redo, paragraph/heading selector (H1–H3), bold, italic, text-align (left/center/right/justify), insert image.
+
+**`src/components/shared/ReportImageManager.tsx`**
+Image CRUD panel rendered inside `ReportDetailPage`. Displays all images attached to a report in a thumbnail grid and provides upload (drag-and-drop / file picker) and delete capabilities.
+
+Props:
+| Prop | Type | Description |
+|------|------|-------------|
+| `reportId` | `string` | Report to manage images for. |
+| `reportStatus` | `ReportStatus` | Controls editability — only `draft` / `amended` allow mutations. |
+| `reportRadiologistId` | `string` | Used for ownership check. |
+| `currentUserId` | `string` | The logged-in user's ID. |
+| `currentUserRole` | `UserRole` | Used together with `reportRadiologistId` to determine `canManageImages`. |
+
+Business rules: `canManageImages = isEditableStatus && (admin || (radiologist && owns the report))`. When the user cannot manage images, the upload zone is hidden. Uses `useReportImages`, `useUploadReportImage`, `useDeleteReportImage`, `useReportImageBlob` hooks internally. DICOM files show a file icon (no thumbnail). Raster image thumbnails are fetched via `useReportImageBlob`. Delete requires a `ConfirmDialog`.
+
 ### UI — `src/components/ui/`
 shadcn/ui primitives: `alert`, `badge`, `button`, `card`, `dialog`, `dropdown-menu`, `input`, `label`, `select`, `table`, `tabs`, `textarea`, `toast`, `toaster`. These are **not** to be modified directly; customise via Tailwind classes at the usage site.
 
@@ -326,6 +395,15 @@ Pure role-check helpers (no React):
 - `canFinalizeReport(role)` → admin, radiologist
 - `canDeletePatient(role)` → admin only
 
+### `src/utils/resolveReportImages.ts`
+Utilities for translating between backend API image paths and ephemeral `blob:` URLs. Used by `RichTextEditor` and `useResolvedHtml` to safely display authenticated images.
+
+- `resolveApiImageSrcs(html)` — scans HTML for `/api/v1/reports/.../images/...` src patterns, fetches each with the user's Bearer token (via `apiClient`), creates a `blob:` URL, and replaces the path in the HTML. Already-cached paths are returned immediately from an in-memory `blobCache` map. Failures are silently ignored (image appears broken rather than crashing the render).
+- `registerBlobMapping(apiPath, blobUrl)` — registers a known API-path ↔ blob-URL pair into both the forward and reverse caches. Call this after uploading an image so `restoreApiImageSrcs` can later map it back.
+- `restoreApiImageSrcs(html)` — before saving HTML back to the backend, replaces any ephemeral `blob:` URLs we created with their original `/api/v1/...` paths. New images added as base64 data URIs during the current edit session are left as-is (the backend handles extraction).
+
+Both caches (`blobCache` and `reverseMap`) are module-level `Map` instances — they persist for the lifetime of the browser session.
+
 ---
 
 ## Lib — `src/lib/`
@@ -337,14 +415,16 @@ Single export: `cn(...inputs)` — merges Tailwind class strings using `clsx` + 
 
 ## Key Patterns & Conventions
 
-1. **All data fetching goes through hooks** — pages never import from `src/api/` directly.
+1. **All data fetching goes through hooks** — pages never import from `src/api/` directly (the sole exception is `RichTextEditor`, which calls `reportsApi.uploadImage` and `reportsApi.getImageBlob` directly for immediate editor feedback).
 2. **Forms use React Hook Form + Zod** — schema defined per-page, `zodResolver` wired into `useForm`. For `Select` components that need to reflect async `form.reset()` values, use `<Controller>` instead of `form.watch()`.
 3. **Role enforcement is dual-layered** — `<RoleGuard>` at the route level and `canEdit*` utils for inline UI control.
-4. **Cache invalidation** — mutations invalidate the minimum necessary query keys. Appointment mutations also invalidate `['dashboard']`. Report mutations also invalidate `['timeline']`.
+4. **Cache invalidation** — mutations invalidate the minimum necessary query keys. Appointment mutations also invalidate `['dashboard']`. Report mutations also invalidate `['timeline']`. Create/update appointment mutations additionally call `refetchQueries` to force an immediate re-fetch.
 5. **Available slots cache** — `staleTime: 0` + `gcTime: 0` so slot data is always fetched fresh from the backend.
-6. **Backend quirks to be aware of:**
+6. **Rich text fields** — findings and impression are stored as HTML. `RichTextEditor` handles authoring; `useResolvedHtml` handles authenticated image display in read-only views; `restoreApiImageSrcs` is called before `PUT /reports/:id` to convert blob URLs back to stable API paths.
+7. **Backend quirks to be aware of:**
    - `GET /appointments` ignores `modality` query param → filter client-side.
    - `GET /schedule/available-slots` already returns only free slots — no client-side availability filtering needed.
-   - `AvailableSlot` does not include `slot_duration_minutes` in the API response — compute from `end - start`.
-   - `/api/v1/dashboard/stats` may return 404 if not implemented — the UI degrades gracefully.
-   - The timeline API uses `date_from`/`date_to` query params (not `from_date`/`to_date`).
+   - `AvailableSlot.slot_duration_minutes` is present in the TypeScript type but the backend does not return it — compute from `end - start` if needed.
+   - `/api/v1/dashboard/stats` may return 404 if not implemented — the UI degrades gracefully (polling stops, no error shown).
+   - The timeline API uses `date_from`/`date_to` query params (not `from_date`/`to_date`). The modality filter is sent as a comma-separated string.
+   - Several list endpoints (`/users`, `/physicians`, `/schedule`) may return either a flat array or a paginated `{ items, total }` object — the API layer handles both shapes.
