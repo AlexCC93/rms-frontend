@@ -8,8 +8,8 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { RichTextEditor } from '@/components/shared/RichTextEditor'
 import { getErrorMessage } from '@/api/client'
 import { format } from 'date-fns'
 import { ArrowLeft, Save, CheckCircle2, Edit, FileText, AlertTriangle } from 'lucide-react'
@@ -20,14 +20,10 @@ import { useToast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { useAuthStore } from '@/stores/authStore'
 import { canEditReport } from '@/utils/roleGuard'
-import { useUser, useUsers } from '@/hooks/useUsers'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { useUser } from '@/hooks/useUsers'
+import { useResolvedHtml } from '@/hooks/useResolvedHtml'
+import { resolveApiImageSrcs, restoreApiImageSrcs } from '@/utils/resolveReportImages'
+
 
 export function ReportDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -38,26 +34,37 @@ export function ReportDetailPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [findings, setFindings] = useState('')
   const [impression, setImpression] = useState('')
+  // Resolved versions with blob: URLs — used as initialValue for the editors
+  const [resolvedFindings, setResolvedFindings] = useState('')
+  const [resolvedImpression, setResolvedImpression] = useState('')
   const [confirmFinalizeOpen, setConfirmFinalizeOpen] = useState(false)
   const [confirmAmendmentOpen, setConfirmAmendmentOpen] = useState(false)
-  const [selectedRadiologistId, setSelectedRadiologistId] = useState<string>('')
 
   const { data: report, isLoading, error } = useReport(id)
   const { data: appointment } = useAppointment(report?.appointment_id)
   const { data: patient } = usePatient(appointment?.patient_id)
   const { data: physician } = usePhysician(appointment?.referring_physician_id || undefined)
   const { data: radiologist } = useUser(report?.radiologist_id)
-  const { data: allUsers } = useUsers()
-  const radiologists = allUsers?.filter((u) => u.role === 'radiologist') ?? []
   const updateReport = useUpdateReport()
   const finalizeReport = useFinalizeReport()
   const createReport = useCreateReport()
 
-  const handleEdit = () => {
+  // Resolved HTML for read-only view — swaps /api/v1/... src → blob: URL
+  const resolvedFindingsView = useResolvedHtml(report?.findings)
+  const resolvedImpressionView = useResolvedHtml(report?.impression)
+
+  const handleEdit = async () => {
     if (report) {
-      setFindings(report.findings)
-      setImpression(report.impression)
-      setSelectedRadiologistId(report.radiologist_id)
+      const [rf, ri] = await Promise.all([
+        resolveApiImageSrcs(report.findings),
+        resolveApiImageSrcs(report.impression),
+      ])
+      setResolvedFindings(rf)
+      setResolvedImpression(ri)
+      // Keep the canonical (API-path) form so onChange updates are based on blob: URLs
+      // and restored before saving
+      setFindings(rf)
+      setImpression(ri)
       setIsEditing(true)
     }
   }
@@ -69,9 +76,8 @@ export function ReportDetailPage() {
       await updateReport.mutateAsync({
         id,
         data: {
-          findings,
-          impression,
-          radiologist_id: selectedRadiologistId || undefined,
+          findings: restoreApiImageSrcs(findings),
+          impression: restoreApiImageSrcs(impression),
         },
       })
       toast({
@@ -306,58 +312,44 @@ export function ReportDetailPage() {
             <p className="text-sm font-medium text-muted-foreground mb-2">
               Radiologist
             </p>
+            <p className="text-base">{radiologist?.full_name ?? '—'}</p>
+          </div>
+
+          <div>
+            <Label className="mb-2 block">Findings</Label>
             {isEditing ? (
-              <Select
-                value={selectedRadiologistId}
-                onValueChange={setSelectedRadiologistId}
-              >
-                <SelectTrigger className="w-[280px]">
-                  <SelectValue placeholder="Select a radiologist..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {radiologists.map((r) => (
-                    <SelectItem key={r.id} value={r.id}>
-                      {r.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <RichTextEditor
+                key={`findings-edit-${id}`}
+                initialValue={resolvedFindings}
+                onChange={setFindings}
+                placeholder="Enter findings…"
+                reportId={id}
+                minHeight="200px"
+              />
             ) : (
-              <p className="text-base">{radiologist?.full_name ?? '—'}</p>
+              <div
+                className="rte-content mt-2 rounded-md border p-4 min-h-[200px]"
+                dangerouslySetInnerHTML={{ __html: resolvedFindingsView || '<p class="text-muted-foreground">No findings recorded</p>' }}
+              />
             )}
           </div>
 
           <div>
-            <Label htmlFor="findings">Findings</Label>
+            <Label className="mb-2 block">Impression</Label>
             {isEditing ? (
-              <Textarea
-                id="findings"
-                value={findings}
-                onChange={(e) => setFindings(e.target.value)}
-                className="min-h-[200px] mt-2"
-                placeholder="Enter findings..."
+              <RichTextEditor
+                key={`impression-edit-${id}`}
+                initialValue={resolvedImpression}
+                onChange={setImpression}
+                placeholder="Enter impression…"
+                reportId={id}
+                minHeight="150px"
               />
             ) : (
-              <div className="mt-2 rounded-md border p-4 min-h-[200px] whitespace-pre-wrap">
-                {report.findings || 'No findings recorded'}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="impression">Impression</Label>
-            {isEditing ? (
-              <Textarea
-                id="impression"
-                value={impression}
-                onChange={(e) => setImpression(e.target.value)}
-                className="min-h-[150px] mt-2"
-                placeholder="Enter impression..."
+              <div
+                className="rte-content mt-2 rounded-md border p-4 min-h-[150px]"
+                dangerouslySetInnerHTML={{ __html: resolvedImpressionView || '<p class="text-muted-foreground">No impression recorded</p>' }}
               />
-            ) : (
-              <div className="mt-2 rounded-md border p-4 min-h-[150px] whitespace-pre-wrap">
-                {report.impression || 'No impression recorded'}
-              </div>
             )}
           </div>
 

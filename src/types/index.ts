@@ -184,6 +184,23 @@ export interface RadiologyReportUpdate {
   radiologist_id?: string
 }
 
+// Report Image
+export interface ReportImage {
+  id: string
+  report_id: string
+  filename: string
+  content_type: string
+  file_size: number
+  uploaded_by_id: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface ReportImageListResponse {
+  items: ReportImage[]
+  total: number
+}
+
 // Timeline Entry
 export interface TimelineEntry {
   appointment_id: string

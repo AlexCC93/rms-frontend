@@ -36,3 +36,47 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* ── Rich text editor (Tiptap / ProseMirror) ─────────────────────────────── */
+
+.rte-content .ProseMirror {
+  outline: none;
+  min-height: inherit;
+}
+
+.rte-content .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+.rte-content .ProseMirror > * + * {
+  margin-top: 0.6em;
+}
+
+.rte-content .ProseMirror h1 { @apply text-2xl font-bold; }
+.rte-content .ProseMirror h2 { @apply text-xl font-semibold; }
+.rte-content .ProseMirror h3 { @apply text-lg font-semibold; }
+
+.rte-content .ProseMirror strong { @apply font-bold; }
+.rte-content .ProseMirror em     { @apply italic; }
+
+.rte-content .ProseMirror ul { @apply list-disc pl-5; }
+.rte-content .ProseMirror ol { @apply list-decimal pl-5; }
+
+.rte-content .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  display: block;
+  margin: 0.75em 0;
+  cursor: default;
+}
+
+.rte-content .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
