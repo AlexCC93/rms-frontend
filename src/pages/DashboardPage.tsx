@@ -24,21 +24,23 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground mt-1">
             {t('dashboard.welcomeBack', { name: user?.full_name || user?.email })}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => navigate('/patients/new')}>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" onClick={() => navigate('/patients/new')}>
             <Plus className="mr-2 h-4 w-4" />
-            {t('dashboard.newPatient')}
+            <span className="hidden sm:inline">{t('dashboard.newPatient')}</span>
+            <span className="sm:hidden">{t('patients.title')}</span>
           </Button>
-          <Button onClick={() => navigate('/appointments/new')}>
+          <Button size="sm" onClick={() => navigate('/appointments/new')}>
             <Plus className="mr-2 h-4 w-4" />
-            {t('dashboard.newAppointment')}
+            <span className="hidden sm:inline">{t('dashboard.newAppointment')}</span>
+            <span className="sm:hidden">{t('appointments.title')}</span>
           </Button>
         </div>
       </div>
@@ -96,7 +98,7 @@ export function DashboardPage() {
           {/* ── Today's activity ── */}
           <div>
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">{t('dashboard.todayActivity')}</h2>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">{t('dashboard.totalToday')}</CardTitle>
@@ -148,7 +150,7 @@ export function DashboardPage() {
           {/* ── Volume & throughput ── */}
           <div>
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">{t('dashboard.volumeThroughput')}</h2>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">{t('dashboard.patientsThisMonth')}</CardTitle>

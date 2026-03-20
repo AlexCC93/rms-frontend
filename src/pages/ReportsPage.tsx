@@ -83,7 +83,7 @@ export function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{t('reports.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">{t('reports.title')}</h1>
       </div>
 
       <div className="flex gap-4">
@@ -91,7 +91,7 @@ export function ReportsPage() {
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as ReportStatus | 'all')}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder={t('reports.filterByStatus')} />
           </SelectTrigger>
           <SelectContent>
@@ -111,7 +111,7 @@ export function ReportsPage() {
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border bg-white">
+        <div className="rounded-lg border bg-white overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

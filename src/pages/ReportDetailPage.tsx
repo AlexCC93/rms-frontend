@@ -158,19 +158,19 @@ export function ReportDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/reports')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">{t('reports.reportDetails')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{t('reports.reportDetails')}</h1>
             <p className="text-sm text-muted-foreground">
               {t('reports.reportId', { id: report.id.slice(0, 8), version: report.version })}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {report.status === 'draft' && canEdit && isEditing && (
             <>
               <Button variant="outline" onClick={() => setIsEditing(false)}>

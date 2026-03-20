@@ -119,7 +119,7 @@ export function ScheduleManagementPage() {
       <div className="flex items-center gap-3">
         <CalendarClock className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-3xl font-bold">{t('schedule.title')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('schedule.title')}</h1>
           <p className="text-sm text-muted-foreground">
             {t('schedule.subtitle')}
           </p>
@@ -240,15 +240,15 @@ export function ScheduleManagementPage() {
       {/* ── Existing schedules ── */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <CardTitle>{t('schedule.activeTemplates')}</CardTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <Label className="text-sm text-muted-foreground">{t('schedule.filterByRadiologist')}</Label>
               <Select
                 value={filterRadiologistId || '__all__'}
                 onValueChange={(v) => setFilterRadiologistId(v === '__all__' ? '' : v)}
               >
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder={t('schedule.allRadiologists')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -276,6 +276,7 @@ export function ScheduleManagementPage() {
               {t('schedule.noTemplatesFound')}
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -320,6 +321,7 @@ export function ScheduleManagementPage() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

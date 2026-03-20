@@ -50,13 +50,13 @@ export function PatientDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/patients')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-2xl sm:text-3xl font-bold">
               {patient.first_name} {patient.last_name}
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -65,11 +65,11 @@ export function PatientDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(`/patients/${id}/edit`)}>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/patients/${id}/edit`)}>
             <Edit className="mr-2 h-4 w-4" />
             {t('patients.editPatient')}
           </Button>
-          <Button onClick={() => navigate(`/appointments/new?patient_id=${id}`)}>
+          <Button size="sm" onClick={() => navigate(`/appointments/new?patient_id=${id}`)}>
             <Plus className="mr-2 h-4 w-4" />
             {t('appointments.newAppointment')}
           </Button>
@@ -159,7 +159,7 @@ export function PatientDetailPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="rounded-lg border bg-white">
+            <div className="rounded-lg border bg-white overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

@@ -40,8 +40,8 @@ export function PatientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{t('patients.title')}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl sm:text-3xl font-bold">{t('patients.title')}</h1>
         <Button onClick={() => navigate('/patients/new')}>
           <Plus className="mr-2 h-4 w-4" />
           {t('patients.newPatient')}
@@ -76,7 +76,7 @@ export function PatientsPage() {
           )}
         </div>
       ) : (
-        <div className="rounded-lg border bg-white">
+        <div className="rounded-lg border bg-white overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

@@ -11,7 +11,11 @@ import {
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 
-export function Sidebar() {
+interface SidebarProps {
+  onNavigate?: () => void
+}
+
+export function Sidebar({ onNavigate }: SidebarProps) {
   const location = useLocation()
   const user = useAuthStore((state) => state.user)
   const { t } = useTranslation()
@@ -71,6 +75,7 @@ export function Sidebar() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={onNavigate}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   isActive(item.path)

@@ -10,11 +10,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, User, Menu } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
 
-export function TopBar() {
+interface TopBarProps {
+  onMenuToggle?: () => void
+}
+
+export function TopBar({ onMenuToggle }: TopBarProps) {
   const user = useAuthStore((state) => state.user)
   const { logout } = useAuth()
   const { t } = useTranslation()
@@ -35,12 +39,16 @@ export function TopBar() {
   if (!user) return null
 
   return (
-    <div className="flex h-16 items-center justify-between border-b bg-white px-6">
-      <div className="flex-1" />
-      <div className="flex items-center gap-4">
+    <div className="flex h-16 items-center justify-between border-b bg-white px-3 md:px-6">
+      <div className="flex items-center">
+        <Button variant="ghost" size="icon" className="md:hidden mr-2" onClick={onMenuToggle}>
+          <Menu className="h-5 w-5" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-2 md:gap-4">
         <LanguageSwitcher />
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium">{user.full_name}</span>
+        <div className="flex items-center gap-2 md:gap-3">
+          <span className="hidden sm:inline text-sm font-medium">{user.full_name}</span>
           <Badge
             variant="outline"
             className={getRoleBadgeColor(user.role)}

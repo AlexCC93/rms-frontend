@@ -120,20 +120,20 @@ export function AppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{t('appointments.title')}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl sm:text-3xl font-bold">{t('appointments.title')}</h1>
         <Button onClick={() => navigate('/appointments/new')}>
           <Plus className="mr-2 h-4 w-4" />
           {t('appointments.newAppointment')}
         </Button>
       </div>
 
-      <div className="flex gap-4">
+      <div className="grid grid-cols-2 gap-2 md:flex md:gap-4">
         <Select
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as AppointmentStatus | 'all')}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder={t('appointments.filterByStatus')} />
           </SelectTrigger>
           <SelectContent>
@@ -149,7 +149,7 @@ export function AppointmentsPage() {
           value={modalityFilter}
           onValueChange={(value) => setModalityFilter(value as Modality | 'all')}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder={t('appointments.filterByModality')} />
           </SelectTrigger>
           <SelectContent>
@@ -166,7 +166,7 @@ export function AppointmentsPage() {
           value={patientFilter}
           onValueChange={(value) => setPatientFilter(value)}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder={t('appointments.filterByPatient')} />
           </SelectTrigger>
           <SelectContent>
@@ -186,7 +186,7 @@ export function AppointmentsPage() {
           value={radiologistFilter}
           onValueChange={(value) => setRadiologistFilter(value)}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder={t('appointments.filterByRadiologist')} />
           </SelectTrigger>
           <SelectContent>
@@ -215,7 +215,7 @@ export function AppointmentsPage() {
           </Button>
         </div>
       ) : (
-        <div className="rounded-lg border bg-white">
+        <div className="rounded-lg border bg-white overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

@@ -32,11 +32,11 @@ export function TimelinePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{t('timeline.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">{t('timeline.title')}</h1>
       </div>
 
       {!timeline || timeline.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-6 sm:p-12 text-center">
           <p className="text-lg font-medium">{t('timeline.noHistory')}</p>
           <p className="text-sm text-muted-foreground mt-1">
             {t('timeline.noHistoryDesc')}
@@ -46,8 +46,8 @@ export function TimelinePage() {
         <div className="space-y-4">
           {timeline.map((entry) => (
             <Card key={entry.appointment_id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-2 sm:pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <ModalityBadge modality={entry.modality} />
                     <CardTitle className="text-lg">
