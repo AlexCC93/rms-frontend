@@ -75,6 +75,20 @@ export function ReportFormPage() {
   if (appointmentError) return <ErrorAlert message={getErrorMessage(appointmentError)} />
   if (!appointment) return <ErrorAlert message="Appointment not found." />
 
+  if (appointment.radiologist_id !== user?.id) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(`/appointments/${appointmentId}`)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-3xl font-bold">New Report</h1>
+        </div>
+        <ErrorAlert message="Only the radiologist assigned to this appointment can create the report." />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
