@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft, FileText } from 'lucide-react'
 import { ModalityBadge } from '@/components/shared/ModalityBadge'
 import { format } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 // Strip HTML tags to check for actual text content
 function stripHtml(html: string) {
@@ -24,8 +25,8 @@ function stripHtml(html: string) {
 }
 
 const reportSchema = z.object({
-  findings: z.string().refine((v) => stripHtml(v).length > 0, 'Findings are required'),
-  impression: z.string().refine((v) => stripHtml(v).length > 0, 'Impression is required'),
+  findings: z.string().refine((v) => stripHtml(v).length > 0, 'required'),
+  impression: z.string().refine((v) => stripHtml(v).length > 0, 'required'),
 })
 
 type ReportFormData = z.infer<typeof reportSchema>
@@ -34,6 +35,7 @@ export function ReportFormPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const appointmentId = searchParams.get('appointment_id') ?? undefined
   const user = useAuthStore((state) => state.user)
@@ -61,19 +63,19 @@ export function ReportFormPage() {
         findings: data.findings,
         impression: data.impression,
       })
-      toast({ title: 'Report created', description: 'Draft report has been created successfully.' })
+      toast({ title: t('reports.reportCreated'), description: t('reports.reportCreatedDesc') })
       navigate(`/reports/${newReport.id}`)
     } catch (error) {
-      toast({ variant: 'destructive', title: 'Creation failed', description: getErrorMessage(error) })
+      toast({ variant: 'destructive', title: t('patients.creationFailed'), description: getErrorMessage(error) })
     }
   }
 
   if (!appointmentId) {
-    return <ErrorAlert message="No appointment specified. Please navigate here from an appointment." />
+    return <ErrorAlert message={t('reports.noAppointment')} />
   }
-  if (isLoadingAppointment) return <LoadingSpinner text="Loading appointment..." />
+  if (isLoadingAppointment) return <LoadingSpinner text={t('appointments.loadingAppointment')} />
   if (appointmentError) return <ErrorAlert message={getErrorMessage(appointmentError)} />
-  if (!appointment) return <ErrorAlert message="Appointment not found." />
+  if (!appointment) return <ErrorAlert message={t('reports.appointmentNotFound')} />
 
   if (appointment.radiologist_id !== user?.id) {
     return (
@@ -82,9 +84,9 @@ export function ReportFormPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate(`/appointments/${appointmentId}`)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-3xl font-bold">New Report</h1>
+          <h1 className="text-3xl font-bold">{t('reports.newReport')}</h1>
         </div>
-        <ErrorAlert message="Only the radiologist assigned to this appointment can create the report." />
+        <ErrorAlert message={t('reports.onlyAssignedRadiologist')} />
       </div>
     )
   }
@@ -96,8 +98,8 @@ export function ReportFormPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">New Report</h1>
-          <p className="text-sm text-muted-foreground">Create a draft report for this appointment</p>
+          <h1 className="text-3xl font-bold">{t('reports.newReport')}</h1>
+          <p className="text-sm text-muted-foreground">{t('reports.createDraftForAppointment')}</p>
         </div>
       </div>
 
@@ -105,35 +107,35 @@ export function ReportFormPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Appointment Summary
+            {t('reports.appointmentSummary')}
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Patient</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.patient')}</p>
             <p className="text-base font-medium">
               {patient ? `${patient.first_name} ${patient.last_name}` : '—'}
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Modality</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.modality')}</p>
             <div className="mt-1">
               <ModalityBadge modality={appointment.modality} />
             </div>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Study Description</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.studyDescription')}</p>
             <p className="text-base">{appointment.study_description}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Scheduled At</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.scheduledAt')}</p>
             <p className="text-base">
               {format(new Date(appointment.scheduled_at), 'MMMM d, yyyy HH:mm')}
             </p>
           </div>
           {appointment.clinical_indication && (
             <div className="md:col-span-2">
-              <p className="text-sm font-medium text-muted-foreground">Clinical Indication</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('reports.clinicalIndication')}</p>
               <p className="text-base">{appointment.clinical_indication}</p>
             </div>
           )}
@@ -143,19 +145,18 @@ export function ReportFormPage() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Card>
           <CardHeader>
-            <CardTitle>Report Content</CardTitle>
+            <CardTitle>{t('reports.reportContent')}</CardTitle>
             <CardDescription>
-              This report will be saved as a draft and can be finalized later. Use the image button
-              in the toolbar to embed images inline within your findings or impression.
+              {t('reports.reportContentDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label>Findings</Label>
+              <Label>{t('reports.findings')}</Label>
               <RichTextEditor
                 initialValue=""
                 onChange={(html) => setValue('findings', html, { shouldValidate: true })}
-                placeholder="Describe the imaging findings…"
+                placeholder={t('reports.describeFindings')}
                 minHeight="220px"
               />
               {errors.findings && (
@@ -164,11 +165,11 @@ export function ReportFormPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Impression</Label>
+              <Label>{t('reports.impression')}</Label>
               <RichTextEditor
                 initialValue=""
                 onChange={(html) => setValue('impression', html, { shouldValidate: true })}
-                placeholder="Summarise the clinical impression…"
+                placeholder={t('reports.summariseImpression')}
                 minHeight="160px"
               />
               {errors.impression && (
@@ -182,10 +183,10 @@ export function ReportFormPage() {
                 variant="outline"
                 onClick={() => navigate(`/appointments/${appointmentId}`)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={createReport.isPending}>
-                {createReport.isPending ? 'Creating…' : 'Create Report'}
+                {createReport.isPending ? t('reports.creatingReport') : t('reports.createReport')}
               </Button>
             </div>
           </CardContent>

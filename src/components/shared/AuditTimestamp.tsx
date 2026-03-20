@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 interface AuditTimestampProps {
   createdAt: string
@@ -11,6 +12,8 @@ export function AuditTimestamp({
   updatedAt,
   label,
 }: AuditTimestampProps) {
+  const { t } = useTranslation()
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return format(date, 'MMM d, yyyy HH:mm')
@@ -22,7 +25,7 @@ export function AuditTimestamp({
   }
 
   const displayDate = updatedAt || createdAt
-  const displayLabel = label || (updatedAt ? 'Updated' : 'Created')
+  const displayLabel = label || (updatedAt ? t('audit.updated') : t('audit.created'))
 
   return (
     <span

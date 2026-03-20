@@ -12,6 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/api/client'
 import { Activity } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -25,6 +27,7 @@ export function LoginPage() {
   const user = useAuthStore((state) => state.user)
   const { loginAsync, isLoggingIn } = useAuth()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [error, setError] = useState<string>('')
 
   // Redirect if already logged in
@@ -51,7 +54,7 @@ export function LoginPage() {
       setError(errorMsg)
       toast({
         variant: 'destructive',
-        title: 'Login Failed',
+        title: t('auth.loginFailed'),
         description: errorMsg,
       })
     }
@@ -59,18 +62,21 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <Activity className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl">RMS-lite</CardTitle>
-          <CardDescription>Radiology Management System</CardDescription>
+          <CardTitle className="text-2xl">{t('common.appName')}</CardTitle>
+          <CardDescription>{t('common.appDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -84,7 +90,7 @@ export function LoginPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -102,7 +108,7 @@ export function LoginPage() {
               </div>
             )}
             <Button type="submit" className="w-full" disabled={isLoggingIn}>
-              {isLoggingIn ? 'Logging in...' : 'Login'}
+              {isLoggingIn ? t('auth.loggingIn') : t('auth.login')}
             </Button>
           </form>
         </CardContent>

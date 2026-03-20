@@ -23,12 +23,14 @@ import { canEditReport } from '@/utils/roleGuard'
 import { useUser } from '@/hooks/useUsers'
 import { useResolvedHtml } from '@/hooks/useResolvedHtml'
 import { resolveApiImageSrcs, restoreApiImageSrcs } from '@/utils/resolveReportImages'
+import { useTranslation } from 'react-i18next'
 
 
 export function ReportDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const user = useAuthStore((state) => state.user)
 
   const [isEditing, setIsEditing] = useState(false)
@@ -81,14 +83,14 @@ export function ReportDetailPage() {
         },
       })
       toast({
-        title: 'Report Saved',
-        description: 'Draft report has been updated',
+        title: t('reports.reportSaved'),
+        description: t('reports.draftUpdated'),
       })
       setIsEditing(false)
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: 'Save Failed',
+        title: t('reports.saveFailed'),
         description: getErrorMessage(err),
       })
     }
@@ -100,14 +102,14 @@ export function ReportDetailPage() {
     try {
       await finalizeReport.mutateAsync(id)
       toast({
-        title: 'Report Finalized',
-        description: 'The report has been finalized and can no longer be edited',
+        title: t('reports.reportFinalized'),
+        description: t('reports.reportFinalizedDesc'),
       })
       setConfirmFinalizeOpen(false)
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: 'Finalize Failed',
+        title: t('reports.finalizeFailed'),
         description: getErrorMessage(err),
       })
     }
@@ -125,22 +127,22 @@ export function ReportDetailPage() {
         parent_report_id: report.id,
       })
       toast({
-        title: 'Amendment Created',
-        description: 'The original report has been marked as amended. Edit the new draft to correct it.',
+        title: t('reports.amendmentCreated'),
+        description: t('reports.amendmentCreatedDesc'),
       })
       setConfirmAmendmentOpen(false)
       navigate(`/reports/${newReport.id}`)
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: 'Create Amendment Failed',
+        title: t('reports.createAmendmentFailed'),
         description: getErrorMessage(err),
       })
     }
   }
 
   if (isLoading) {
-    return <LoadingSpinner text="Loading report..." />
+    return <LoadingSpinner text={t('reports.loadingReport')} />
   }
 
   if (error) {
@@ -148,7 +150,7 @@ export function ReportDetailPage() {
   }
 
   if (!report) {
-    return <ErrorAlert message="Report not found" />
+    return <ErrorAlert message={t('reports.reportNotFound')} />
   }
 
   const canEdit = canEditReport(user?.role) && report.status === 'draft'
@@ -162,9 +164,9 @@ export function ReportDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Report Details</h1>
+            <h1 className="text-3xl font-bold">{t('reports.reportDetails')}</h1>
             <p className="text-sm text-muted-foreground">
-              Report ID: {report.id.slice(0, 8)} - Version {report.version}
+              {t('reports.reportId', { id: report.id.slice(0, 8), version: report.version })}
             </p>
           </div>
         </div>
@@ -172,28 +174,28 @@ export function ReportDetailPage() {
           {report.status === 'draft' && canEdit && isEditing && (
             <>
               <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button onClick={handleSave} disabled={updateReport.isPending}>
                 <Save className="mr-2 h-4 w-4" />
-                {updateReport.isPending ? 'Saving...' : 'Save Draft'}
+                {updateReport.isPending ? t('reports.savingDraft') : t('reports.saveDraft')}
               </Button>
               <Button onClick={() => setConfirmFinalizeOpen(true)}>
                 <CheckCircle2 className="mr-2 h-4 w-4" />
-                Finalize Report
+                {t('reports.finalizeReport')}
               </Button>
             </>
           )}
           {report.status === 'draft' && canEdit && !isEditing && (
             <Button onClick={handleEdit}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Report
+              {t('reports.editReport')}
             </Button>
           )}
           {report.status === 'final' && canAmend && (
             <Button variant="outline" onClick={() => setConfirmAmendmentOpen(true)}>
               <FileText className="mr-2 h-4 w-4" />
-              Create Amendment
+              {t('reports.createAmendment')}
             </Button>
           )}
         </div>
@@ -203,9 +205,9 @@ export function ReportDetailPage() {
         <div className="flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-4">
           <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 shrink-0" />
           <div>
-            <p className="font-medium text-yellow-800">This report has been superseded</p>
+            <p className="font-medium text-yellow-800">{t('reports.superseded')}</p>
             <p className="text-sm text-yellow-700 mt-1">
-              An amendment was issued for this report. The content below is the original signed version and is preserved for audit purposes.
+              {t('reports.supersededDesc')}
             </p>
           </div>
         </div>
@@ -215,9 +217,9 @@ export function ReportDetailPage() {
         <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
           <FileText className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="font-medium text-blue-800">Amendment — Version {report.version}</p>
+            <p className="font-medium text-blue-800">{t('reports.amendmentVersion', { version: report.version })}</p>
             <p className="text-sm text-blue-700 mt-1">
-              This report is an amendment of a previous version.
+              {t('reports.amendmentDesc')}
             </p>
           </div>
           <Button
@@ -226,18 +228,18 @@ export function ReportDetailPage() {
             className="shrink-0"
             onClick={() => navigate(`/reports/${report.parent_report_id}`)}
           >
-            View Original
+            {t('common.viewOriginal')}
           </Button>
         </div>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Appointment Information</CardTitle>
+          <CardTitle>{t('reports.appointmentInformation')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Patient</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.patient')}</p>
             <p
               className="text-base font-medium text-primary cursor-pointer hover:underline"
               onClick={() =>
@@ -248,7 +250,7 @@ export function ReportDetailPage() {
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Status</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.status')}</p>
             {appointment && (
               <div className="mt-1">
                 <StatusBadge status={appointment.status} type="appointment" />
@@ -256,7 +258,7 @@ export function ReportDetailPage() {
             )}
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Modality</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.modality')}</p>
             {appointment && (
               <div className="mt-1">
                 <ModalityBadge modality={appointment.modality} />
@@ -264,11 +266,11 @@ export function ReportDetailPage() {
             )}
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Study Description</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.studyDescription')}</p>
             <p className="text-base">{appointment?.study_description || '—'}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Scheduled At</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.scheduledAt')}</p>
             <p className="text-base">
               {appointment
                 ? format(new Date(appointment.scheduled_at), 'MMMM d, yyyy HH:mm')
@@ -276,13 +278,13 @@ export function ReportDetailPage() {
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Duration</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.duration')}</p>
             <p className="text-base">
-              {appointment ? `${appointment.duration_minutes} minutes` : '—'}
+              {appointment ? t('reports.durationMinutes', { count: appointment.duration_minutes }) : '—'}
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Referring Physician</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('reports.referringPhysician')}</p>
             <p className="text-base">
               {physician
                 ? physician.full_name
@@ -293,7 +295,7 @@ export function ReportDetailPage() {
           </div>
           {appointment?.clinical_indication && (
             <div className="md:col-span-2">
-              <p className="text-sm font-medium text-muted-foreground">Clinical Indication</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('reports.clinicalIndication')}</p>
               <p className="text-base">{appointment.clinical_indication}</p>
             </div>
           )}
@@ -303,20 +305,20 @@ export function ReportDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Report</CardTitle>
+            <CardTitle>{t('reports.report')}</CardTitle>
             <StatusBadge status={report.status} type="report" />
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">
-              Radiologist
+              {t('reports.radiologist')}
             </p>
             <p className="text-base">{radiologist?.full_name ?? '—'}</p>
           </div>
 
           <div>
-            <Label className="mb-2 block">Findings</Label>
+            <Label className="mb-2 block">{t('reports.findings')}</Label>
             {isEditing ? (
               <RichTextEditor
                 key={`findings-edit-${id}`}
@@ -329,13 +331,13 @@ export function ReportDetailPage() {
             ) : (
               <div
                 className="rte-content mt-2 rounded-md border p-4 min-h-[200px]"
-                dangerouslySetInnerHTML={{ __html: resolvedFindingsView || '<p class="text-muted-foreground">No findings recorded</p>' }}
+                dangerouslySetInnerHTML={{ __html: resolvedFindingsView || `<p class="text-muted-foreground">${t('reports.noFindingsRecorded')}</p>` }}
               />
             )}
           </div>
 
           <div>
-            <Label className="mb-2 block">Impression</Label>
+            <Label className="mb-2 block">{t('reports.impression')}</Label>
             {isEditing ? (
               <RichTextEditor
                 key={`impression-edit-${id}`}
@@ -348,19 +350,19 @@ export function ReportDetailPage() {
             ) : (
               <div
                 className="rte-content mt-2 rounded-md border p-4 min-h-[150px]"
-                dangerouslySetInnerHTML={{ __html: resolvedImpressionView || '<p class="text-muted-foreground">No impression recorded</p>' }}
+                dangerouslySetInnerHTML={{ __html: resolvedImpressionView || `<p class="text-muted-foreground">${t('reports.noImpressionRecorded')}</p>` }}
               />
             )}
           </div>
 
           <div className="flex gap-6">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Version</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('reports.version')}</p>
               <p className="text-base">{report.version}</p>
             </div>
             {report.finalized_at && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Finalized</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('reports.finalized')}</p>
                 <p className="text-base">
                   {format(new Date(report.finalized_at), 'MMM d, yyyy HH:mm')}
                 </p>
@@ -377,12 +379,12 @@ export function ReportDetailPage() {
           {report.parent_report_id && (
             <div className="pt-2 border-t">
               <p className="text-sm text-muted-foreground">
-                This is an amended version.{' '}
+                {t('reports.thisIsAmendedVersion')}{' '}
                 <span
                   className="text-primary cursor-pointer hover:underline"
                   onClick={() => navigate(`/reports/${report.parent_report_id}`)}
                 >
-                  View original report
+                  {t('reports.viewOriginalReport')}
                 </span>
               </p>
             </div>
@@ -393,9 +395,9 @@ export function ReportDetailPage() {
       <ConfirmDialog
         open={confirmFinalizeOpen}
         onOpenChange={setConfirmFinalizeOpen}
-        title="Finalize Report"
-        message="Finalized reports cannot be edited. Are you sure you want to proceed?"
-        confirmLabel="Finalize"
+        title={t('reports.confirmFinalize')}
+        message={t('reports.confirmFinalizeMsg')}
+        confirmLabel={t('reports.finalizeReport')}
         onConfirm={handleFinalize}
         isLoading={finalizeReport.isPending}
       />
@@ -403,9 +405,9 @@ export function ReportDetailPage() {
       <ConfirmDialog
         open={confirmAmendmentOpen}
         onOpenChange={setConfirmAmendmentOpen}
-        title="Create Amendment"
-        message="This will mark the current finalized report as amended and create a new draft for corrections. The original report is permanently preserved for audit purposes. Do you want to proceed?"
-        confirmLabel="Create Amendment"
+        title={t('reports.confirmAmendment')}
+        message={t('reports.confirmAmendmentMsg')}
+        confirmLabel={t('reports.createAmendment')}
         onConfirm={handleCreateAmendment}
         isLoading={createReport.isPending}
       />

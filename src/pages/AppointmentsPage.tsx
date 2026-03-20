@@ -28,9 +28,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useTranslation } from 'react-i18next'
 
 export function AppointmentsPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'all'>('all')
   const [modalityFilter, setModalityFilter] = useState<Modality | 'all'>('all')
   const [patientFilter, setPatientFilter] = useState<string>('all')
@@ -109,7 +111,7 @@ export function AppointmentsPage() {
   }, [appointments, modalityFilter, patientFilter, radiologistFilter])
 
   if (isLoading || isLoadingPatients || isLoadingRadiologists) {
-    return <LoadingSpinner text="Loading appointments..." />
+    return <LoadingSpinner text={t('appointments.loadingAppointments')} />
   }
 
   if (error) {
@@ -119,10 +121,10 @@ export function AppointmentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Appointments</h1>
+        <h1 className="text-3xl font-bold">{t('appointments.title')}</h1>
         <Button onClick={() => navigate('/appointments/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          New Appointment
+          {t('appointments.newAppointment')}
         </Button>
       </div>
 
@@ -132,14 +134,14 @@ export function AppointmentsPage() {
           onValueChange={(value) => setStatusFilter(value as AppointmentStatus | 'all')}
         >
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder={t('appointments.filterByStatus')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="scheduled">Scheduled</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="canceled">Canceled</SelectItem>
-            <SelectItem value="no_show">No Show</SelectItem>
+            <SelectItem value="all">{t('appointments.allStatuses')}</SelectItem>
+            <SelectItem value="scheduled">{t('appointments.scheduled')}</SelectItem>
+            <SelectItem value="completed">{t('appointments.completed')}</SelectItem>
+            <SelectItem value="canceled">{t('appointments.canceled')}</SelectItem>
+            <SelectItem value="no_show">{t('appointments.noShow')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -148,15 +150,15 @@ export function AppointmentsPage() {
           onValueChange={(value) => setModalityFilter(value as Modality | 'all')}
         >
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by modality" />
+            <SelectValue placeholder={t('appointments.filterByModality')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Modalities</SelectItem>
-            <SelectItem value="XR">X-Ray (XR)</SelectItem>
-            <SelectItem value="CT">CT Scan</SelectItem>
-            <SelectItem value="US">Ultrasound (US)</SelectItem>
-            <SelectItem value="MRI">MRI</SelectItem>
-            <SelectItem value="MAMMO">Mammography</SelectItem>
+            <SelectItem value="all">{t('appointments.allModalities')}</SelectItem>
+            <SelectItem value="XR">{t('modalities.XR')}</SelectItem>
+            <SelectItem value="CT">{t('modalities.CT')}</SelectItem>
+            <SelectItem value="US">{t('modalities.US')}</SelectItem>
+            <SelectItem value="MRI">{t('modalities.MRI')}</SelectItem>
+            <SelectItem value="MAMMO">{t('modalities.MAMMO')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -165,10 +167,10 @@ export function AppointmentsPage() {
           onValueChange={(value) => setPatientFilter(value)}
         >
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by patient" />
+            <SelectValue placeholder={t('appointments.filterByPatient')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Patients</SelectItem>
+            <SelectItem value="all">{t('appointments.allPatients')}</SelectItem>
             {uniquePatientIds.map(id => {
               const patient = patientMap.get(id)
               return (
@@ -185,10 +187,10 @@ export function AppointmentsPage() {
           onValueChange={(value) => setRadiologistFilter(value)}
         >
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by radiologist" />
+            <SelectValue placeholder={t('appointments.filterByRadiologist')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Radiologists</SelectItem>
+            <SelectItem value="all">{t('appointments.allRadiologists')}</SelectItem>
             {uniqueRadiologistIds.map(id => {
               const radiologist = radiologistMap.get(id)
               return (
@@ -203,13 +205,13 @@ export function AppointmentsPage() {
 
       {filteredAppointments.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-          <p className="text-lg font-medium">No appointments found</p>
+          <p className="text-lg font-medium">{t('appointments.noResults')}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Get started by creating a new appointment
+            {t('appointments.getStarted')}
           </p>
           <Button className="mt-4" onClick={() => navigate('/appointments/new')}>
             <Plus className="mr-2 h-4 w-4" />
-            New Appointment
+            {t('appointments.newAppointment')}
           </Button>
         </div>
       ) : (
@@ -217,12 +219,12 @@ export function AppointmentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Patient Name</TableHead>
-                <TableHead>Modality</TableHead>
-                <TableHead>Study Description</TableHead>
-                <TableHead>Scheduled At</TableHead>
-                <TableHead>Radiologist</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t('appointments.patientName')}</TableHead>
+                <TableHead>{t('appointments.modality')}</TableHead>
+                <TableHead>{t('appointments.studyDescription')}</TableHead>
+                <TableHead>{t('appointments.scheduledAt')}</TableHead>
+                <TableHead>{t('appointments.radiologist')}</TableHead>
+                <TableHead>{t('appointments.status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -241,7 +243,7 @@ export function AppointmentsPage() {
                       {patient ? (
                         `${patient.first_name} ${patient.last_name}`
                       ) : (
-                        'Unknown'
+                        t('common.unknown')
                       )}
                     </TableCell>
                     <TableCell>

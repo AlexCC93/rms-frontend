@@ -1,5 +1,6 @@
 import { AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { useTranslation } from 'react-i18next'
 
 interface ErrorAlertProps {
   title?: string
@@ -7,13 +8,14 @@ interface ErrorAlertProps {
 }
 
 export function ErrorAlert({
-  title = 'Error',
+  title,
   message,
 }: ErrorAlertProps) {
+  const { t } = useTranslation()
   return (
     <Alert variant="destructive">
       <AlertCircle className="h-4 w-4" />
-      <AlertTitle>{title}</AlertTitle>
+      <AlertTitle>{title ?? t('common.error')}</AlertTitle>
       <AlertDescription>{message}</AlertDescription>
     </Alert>
   )

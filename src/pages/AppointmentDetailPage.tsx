@@ -21,11 +21,13 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import type { AppointmentStatus } from '@/types'
 import { useAuthStore } from '@/stores/authStore'
 import { canEditReport } from '@/utils/roleGuard'
+import { useTranslation } from 'react-i18next'
 
 export function AppointmentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const user = useAuthStore((state) => state.user)
 
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
@@ -59,22 +61,22 @@ export function AppointmentDetailPage() {
         data: { status: pendingStatus },
       })
       toast({
-        title: 'Status Updated',
-        description: `Appointment status changed to ${pendingStatus}`,
+        title: t('appointments.statusUpdated'),
+        description: t('appointments.statusChangedTo', { status: pendingStatus }),
       })
       setConfirmDialogOpen(false)
       setPendingStatus(null)
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: 'Update Failed',
+        title: t('appointments.updateFailed'),
         description: getErrorMessage(err),
       })
     }
   }
 
   if (isLoading) {
-    return <LoadingSpinner text="Loading appointment..." />
+    return <LoadingSpinner text={t('appointments.loadingAppointment')} />
   }
 
   if (error) {
@@ -82,7 +84,7 @@ export function AppointmentDetailPage() {
   }
 
   if (!appointment) {
-    return <ErrorAlert message="Appointment not found" />
+    return <ErrorAlert message={t('appointments.appointmentNotFound')} />
   }
 
   const availableTransitions = getAvailableStatusTransitions(appointment.status)
@@ -96,7 +98,7 @@ export function AppointmentDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Appointment Details</h1>
+            <h1 className="text-3xl font-bold">{t('appointments.appointmentDetails')}</h1>
             <p className="text-sm text-muted-foreground">
               ID: {appointment.id.slice(0, 8)}
             </p>
@@ -109,7 +111,7 @@ export function AppointmentDetailPage() {
               onClick={() => navigate(`/appointments/${id}/edit`)}
             >
               <Edit className="mr-2 h-4 w-4" />
-              Edit
+              {t('common.edit')}
             </Button>
           )}
         </div>
@@ -117,64 +119,64 @@ export function AppointmentDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Appointment Information</CardTitle>
+          <CardTitle>{t('appointments.appointmentInformation')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Patient</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('appointments.patient')}</p>
             <p
               className="text-base font-medium text-primary cursor-pointer hover:underline"
               onClick={() => navigate(`/patients/${appointment.patient_id}`)}
             >
               {patient
                 ? `${patient.first_name} ${patient.last_name}`
-                : 'Unknown'}
+                : t('common.unknown')}
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Status</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('appointments.status')}</p>
             <div className="mt-1">
               <StatusBadge status={appointment.status} type="appointment" />
             </div>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Modality</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('appointments.modality')}</p>
             <div className="mt-1">
               <ModalityBadge modality={appointment.modality} />
             </div>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Study Description</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('appointments.studyDescription')}</p>
             <p className="text-base">{appointment.study_description}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Scheduled At</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('appointments.scheduledAt')}</p>
             <p className="text-base">
               {format(new Date(appointment.scheduled_at), 'MMMM d, yyyy HH:mm')}
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Duration</p>
-            <p className="text-base">{appointment.duration_minutes} minutes</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('appointments.duration')}</p>
+            <p className="text-base">{t('appointments.durationMinutes', { count: appointment.duration_minutes })}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Referring Physician</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('appointments.referringPhysician')}</p>
             <p className="text-base">{physician ? physician.full_name : (appointment.referring_physician_id ? appointment.referring_physician_id : '—')}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-              <UserRound className="h-3.5 w-3.5" /> Assigned Radiologist
+              <UserRound className="h-3.5 w-3.5" /> {t('appointments.assignedRadiologist')}
             </p>
             <p className="text-base">
               {assignedRadiologist
                 ? assignedRadiologist.full_name
                 : appointment.radiologist_id
                 ? appointment.radiologist_id.slice(0, 8) + '…'
-                : <span className="text-muted-foreground italic">Not yet assigned</span>}
+                : <span className="text-muted-foreground italic">{t('appointments.notYetAssigned')}</span>}
             </p>
           </div>
           <div className="md:col-span-2">
-            <p className="text-sm font-medium text-muted-foreground">Clinical Indication</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('appointments.clinicalIndication')}</p>
             <p className="text-base">{appointment.clinical_indication || '—'}</p>
           </div>
           <div>
@@ -189,7 +191,7 @@ export function AppointmentDetailPage() {
       {availableTransitions.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Status Transitions</CardTitle>
+            <CardTitle>{t('appointments.statusTransitions')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2">
@@ -210,11 +212,11 @@ export function AppointmentDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Report</CardTitle>
+            <CardTitle>{t('reports.report')}</CardTitle>
             {!report && canEditReport(user?.role) && appointment.status === 'completed' && (
               <Button onClick={() => navigate(`/reports/new?appointment_id=${id}`)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Create Report
+                {t('reports.createReport')}
               </Button>
             )}
           </div>
@@ -237,7 +239,7 @@ export function AppointmentDetailPage() {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No report available for this appointment.
+              {t('reports.noReportAvailable')}
             </p>
           )}
         </CardContent>
@@ -246,9 +248,9 @@ export function AppointmentDetailPage() {
       <ConfirmDialog
         open={confirmDialogOpen}
         onOpenChange={setConfirmDialogOpen}
-        title="Confirm Status Change"
-        message={`Are you sure you want to change the status to ${pendingStatus?.replace('_', ' ')}?`}
-        confirmLabel="Confirm"
+        title={t('appointments.confirmStatusChange')}
+        message={t('appointments.confirmStatusChangeMsg', { status: pendingStatus?.replace('_', ' ') })}
+        confirmLabel={t('common.confirm')}
         onConfirm={confirmStatusChange}
         isLoading={updateStatus.isPending}
       />

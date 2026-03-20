@@ -1,6 +1,17 @@
 import { Badge } from '@/components/ui/badge'
 import type { AppointmentStatus, ReportStatus } from '@/types'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
+
+const STATUS_KEYS: Record<string, string> = {
+  scheduled: 'appointments.scheduled',
+  completed: 'appointments.completed',
+  canceled: 'appointments.canceled',
+  no_show: 'appointments.noShow',
+  draft: 'reports.draft',
+  final: 'reports.final',
+  amended: 'reports.amended',
+}
 
 interface StatusBadgeProps {
   status: AppointmentStatus | ReportStatus
@@ -8,6 +19,8 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, type }: StatusBadgeProps) {
+  const { t } = useTranslation()
+
   const getAppointmentStatusStyles = (status: AppointmentStatus) => {
     switch (status) {
       case 'scheduled':
@@ -38,7 +51,8 @@ export function StatusBadge({ status, type }: StatusBadgeProps) {
 
   const getLabel = (status: string | undefined) => {
     if (!status) return '—'
-    return status.replace('_', ' ').toUpperCase()
+    const key = STATUS_KEYS[status]
+    return key ? t(key).toUpperCase() : status.replace('_', ' ').toUpperCase()
   }
 
   const styles =

@@ -18,9 +18,11 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useTranslation } from 'react-i18next'
 
 export function PatientsPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearch = useDebounce(searchTerm, 300)
 
@@ -29,7 +31,7 @@ export function PatientsPage() {
   )
 
   if (isLoading) {
-    return <LoadingSpinner text="Loading patients..." />
+    return <LoadingSpinner text={t('patients.loadingPatients')} />
   }
 
   if (error) {
@@ -39,10 +41,10 @@ export function PatientsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Patients</h1>
+        <h1 className="text-3xl font-bold">{t('patients.title')}</h1>
         <Button onClick={() => navigate('/patients/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          New Patient
+          {t('patients.newPatient')}
         </Button>
       </div>
 
@@ -50,7 +52,7 @@ export function PatientsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search patients by name, ID, or phone..."
+            placeholder={t('patients.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9"
@@ -60,16 +62,16 @@ export function PatientsPage() {
 
       {!patients || patients.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-          <p className="text-lg font-medium">No patients found</p>
+          <p className="text-lg font-medium">{t('patients.noResults')}</p>
           <p className="text-sm text-muted-foreground mt-1">
             {searchTerm
-              ? 'Try adjusting your search'
-              : 'Get started by creating a new patient'}
+              ? t('patients.adjustSearch')
+              : t('patients.getStarted')}
           </p>
           {!searchTerm && (
             <Button className="mt-4" onClick={() => navigate('/patients/new')}>
               <Plus className="mr-2 h-4 w-4" />
-              New Patient
+              {t('patients.newPatient')}
             </Button>
           )}
         </div>
@@ -78,12 +80,12 @@ export function PatientsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Full Name</TableHead>
-                <TableHead>Date of Birth</TableHead>
-                <TableHead>Sex</TableHead>
-                <TableHead>National ID</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t('patients.fullName')}</TableHead>
+                <TableHead>{t('patients.dateOfBirth')}</TableHead>
+                <TableHead>{t('patients.sex')}</TableHead>
+                <TableHead>{t('patients.nationalId')}</TableHead>
+                <TableHead>{t('patients.phone')}</TableHead>
+                <TableHead>{t('patients.status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -113,7 +115,7 @@ export function PatientsPage() {
                           : 'bg-gray-100 text-gray-800 border-gray-200'
                       }
                     >
-                      {patient.is_active ? 'Active' : 'Inactive'}
+                      {patient.is_active ? t('common.active') : t('common.inactive')}
                     </Badge>
                   </TableCell>
                 </TableRow>

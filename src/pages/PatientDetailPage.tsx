@@ -14,6 +14,7 @@ import { ArrowLeft, Calendar, Edit, Plus } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ModalityBadge } from '@/components/shared/ModalityBadge'
 import { AuditTimestamp } from '@/components/shared/AuditTimestamp'
+import { useTranslation } from 'react-i18next'
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ import {
 export function PatientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const { data: patient, isLoading: isLoadingPatient, error: patientError } = usePatient(id)
   const { data: appointments, isLoading: isLoadingAppointments } = useAppointments(
@@ -35,7 +37,7 @@ export function PatientDetailPage() {
   const { data: timeline, isLoading: isLoadingTimeline } = useTimeline({ patient_id: id! })
 
   if (isLoadingPatient) {
-    return <LoadingSpinner text="Loading patient..." />
+    return <LoadingSpinner text={t('patients.loadingPatient')} />
   }
 
   if (patientError) {
@@ -43,7 +45,7 @@ export function PatientDetailPage() {
   }
 
   if (!patient) {
-    return <ErrorAlert message="Patient not found" />
+    return <ErrorAlert message={t('patients.patientNotFound')} />
   }
 
   return (
@@ -58,61 +60,61 @@ export function PatientDetailPage() {
               {patient.first_name} {patient.last_name}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Patient ID: {patient.id.slice(0, 8)}
+              {t('patients.patientId', { id: patient.id.slice(0, 8) })}
             </p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(`/patients/${id}/edit`)}>
             <Edit className="mr-2 h-4 w-4" />
-            Edit Patient
+            {t('patients.editPatient')}
           </Button>
           <Button onClick={() => navigate(`/appointments/new?patient_id=${id}`)}>
             <Plus className="mr-2 h-4 w-4" />
-            New Appointment
+            {t('appointments.newAppointment')}
           </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Patient Information</CardTitle>
+          <CardTitle>{t('patients.patientInformation')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Full Name</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('patients.fullName')}</p>
             <p className="text-base">
               {patient.first_name} {patient.last_name}
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('patients.dateOfBirth')}</p>
             <p className="text-base">
               {format(new Date(patient.date_of_birth), 'MMMM d, yyyy')}
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Sex</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('patients.sex')}</p>
             <p className="text-base capitalize">{patient.sex}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">National ID</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('patients.nationalId')}</p>
             <p className="text-base">{patient.national_id}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Phone</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('patients.phone')}</p>
             <p className="text-base">{patient.phone || '—'}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Email</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('patients.emailField')}</p>
             <p className="text-base">{patient.email || '—'}</p>
           </div>
           <div className="md:col-span-2">
-            <p className="text-sm font-medium text-muted-foreground">Notes</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('patients.notes')}</p>
             <p className="text-base">{patient.notes || '—'}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Status</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('patients.status')}</p>
             <Badge
               variant="outline"
               className={
@@ -121,7 +123,7 @@ export function PatientDetailPage() {
                   : 'bg-gray-100 text-gray-800 border-gray-200'
               }
             >
-              {patient.is_active ? 'Active' : 'Inactive'}
+              {patient.is_active ? t('common.active') : t('common.inactive')}
             </Badge>
           </div>
           <div>
@@ -135,24 +137,24 @@ export function PatientDetailPage() {
 
       <Tabs defaultValue="appointments">
         <TabsList>
-          <TabsTrigger value="appointments">Appointments</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="appointments">{t('nav.appointments')}</TabsTrigger>
+          <TabsTrigger value="timeline">{t('timeline.title')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="appointments" className="space-y-4">
           {isLoadingAppointments ? (
-            <LoadingSpinner text="Loading appointments..." />
+            <LoadingSpinner text={t('appointments.loadingAppointments')} />
           ) : !appointments || !Array.isArray(appointments) || appointments.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center p-12">
                 <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">No appointments yet</p>
+                <p className="text-lg font-medium">{t('patientDetail.noAppointmentsYet')}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Schedule the first appointment for this patient
+                  {t('patientDetail.scheduleFirstAppointment')}
                 </p>
                 <Button className="mt-4" onClick={() => navigate(`/appointments/new?patient_id=${id}`)}>
                   <Plus className="mr-2 h-4 w-4" />
-                  New Appointment
+                  {t('appointments.newAppointment')}
                 </Button>
               </CardContent>
             </Card>
@@ -161,10 +163,10 @@ export function PatientDetailPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Modality</TableHead>
-                    <TableHead>Study Description</TableHead>
-                    <TableHead>Scheduled At</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t('appointments.modality')}</TableHead>
+                    <TableHead>{t('appointments.studyDescription')}</TableHead>
+                    <TableHead>{t('appointments.scheduledAt')}</TableHead>
+                    <TableHead>{t('appointments.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -194,11 +196,11 @@ export function PatientDetailPage() {
 
         <TabsContent value="timeline">
           {isLoadingTimeline ? (
-            <LoadingSpinner text="Loading timeline..." />
+            <LoadingSpinner text={t('timeline.loadingTimeline')} />
           ) : !timeline || timeline.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
-                <p className="text-muted-foreground">No imaging history found for this patient</p>
+                <p className="text-muted-foreground">{t('patientDetail.noImagingHistory')}</p>
               </CardContent>
             </Card>
           ) : (

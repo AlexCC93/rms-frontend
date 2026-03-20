@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft, Clock, User, X, RefreshCw, CalendarCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Modality, AvailableSlot } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 const appointmentSchema = z.object({
   patient_id: z.string().min(1, 'Patient is required'),
@@ -37,6 +38,7 @@ export function AppointmentFormPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const isEditing = id !== undefined
 
   const [selectedDate, setSelectedDate] = useState<string>('')
@@ -136,40 +138,40 @@ export function AppointmentFormPage() {
 
       if (isEditing) {
         await updateAppointment.mutateAsync({ id: id!, data: payload })
-        toast({ title: 'Appointment updated', description: 'Appointment has been updated successfully.' })
+        toast({ title: t('appointments.appointmentUpdated'), description: t('appointments.appointmentUpdatedDesc') })
         navigate(`/appointments/${id}`)
       } else {
         await createAppointment.mutateAsync(payload)
-        toast({ title: 'Appointment created', description: 'New appointment has been created successfully.' })
+        toast({ title: t('appointments.appointmentCreated'), description: t('appointments.appointmentCreatedDesc') })
         navigate('/appointments')
       }
     } catch (error) {
       if ((error as any)?.response?.status === 409) {
         toast({
           variant: 'destructive',
-          title: 'Slot no longer available',
-          description: 'This slot is no longer available, please pick another.',
+          title: t('appointments.slotNoLongerAvailable'),
+          description: t('appointments.slotNoLongerAvailableDesc'),
         })
         handleClearSlot()
         refetchSlots()
       } else if ((error as any)?.response?.status === 404 && form.getValues('radiologist_id')) {
         toast({
           variant: 'destructive',
-          title: 'Radiologist unavailable',
-          description: 'Selected radiologist is no longer available.',
+          title: t('appointments.radiologistUnavailable'),
+          description: t('appointments.radiologistUnavailableDesc'),
         })
       } else {
         toast({
           variant: 'destructive',
-          title: isEditing ? 'Update failed' : 'Creation failed',
+          title: isEditing ? t('appointments.updateFailed') : t('appointments.creationFailed'),
           description: getErrorMessage(error),
         })
       }
     }
   }
 
-  if (isEditing && isLoadingAppointment) return <LoadingSpinner text="Loading appointment..." />
-  if (isLoadingPatients || isLoadingPhysicians) return <LoadingSpinner text="Loading form data..." />
+  if (isEditing && isLoadingAppointment) return <LoadingSpinner text={t('appointments.loadingAppointment')} />
+  if (isLoadingPatients || isLoadingPhysicians) return <LoadingSpinner text={t('appointments.loadingFormData')} />
 
   const currentScheduledAt = form.watch('scheduled_at')
   const currentRadiologistId = form.watch('radiologist_id')
@@ -181,7 +183,7 @@ export function AppointmentFormPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-3xl font-bold">
-          {isEditing ? 'Edit Appointment' : 'New Appointment'}
+          {isEditing ? t('appointments.editAppointment') : t('appointments.newAppointment')}
         </h1>
       </div>
 
@@ -189,14 +191,14 @@ export function AppointmentFormPage() {
         {/* ── Section 1: Patient & Clinical Info ── */}
         <Card>
           <CardHeader>
-            <CardTitle>Patient &amp; Clinical Information</CardTitle>
-            <CardDescription>Basic appointment details</CardDescription>
+            <CardTitle>{t('appointments.patientClinicalInfo')}</CardTitle>
+            <CardDescription>{t('appointments.basicDetails')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               {/* Patient */}
               <div className="space-y-2">
-                <Label>Patient *</Label>
+                <Label>{t('appointments.patient')} *</Label>
                 {isEditing && currentPatient ? (
                   <Input
                     value={`${currentPatient.last_name}, ${currentPatient.first_name} — ${currentPatient.national_id}`}
@@ -209,7 +211,7 @@ export function AppointmentFormPage() {
                     onValueChange={(v) => form.setValue('patient_id', v, { shouldValidate: true })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a patient" />
+                      <SelectValue placeholder={t('appointments.selectPatient')} />
                     </SelectTrigger>
                     <SelectContent>
                       {patients?.map((p) => (
@@ -227,18 +229,18 @@ export function AppointmentFormPage() {
 
               {/* Modality */}
               <div className="space-y-2">
-                <Label>Modality *</Label>
+                <Label>{t('appointments.modality')} *</Label>
                 <Select
                   value={form.watch('modality')}
                   onValueChange={(v) => form.setValue('modality', v as Modality, { shouldValidate: true })}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="XR">X-Ray (XR)</SelectItem>
-                    <SelectItem value="CT">CT Scan</SelectItem>
-                    <SelectItem value="US">Ultrasound (US)</SelectItem>
-                    <SelectItem value="MRI">MRI</SelectItem>
-                    <SelectItem value="MAMMO">Mammography</SelectItem>
+                    <SelectItem value="XR">{t('modalities.XR')}</SelectItem>
+                    <SelectItem value="CT">{t('modalities.CT')}</SelectItem>
+                    <SelectItem value="US">{t('modalities.US')}</SelectItem>
+                    <SelectItem value="MRI">{t('modalities.MRI')}</SelectItem>
+                    <SelectItem value="MAMMO">{t('modalities.MAMMO')}</SelectItem>
                   </SelectContent>
                 </Select>
                 {form.formState.errors.modality && (
@@ -248,7 +250,7 @@ export function AppointmentFormPage() {
 
               {/* Study Description */}
               <div className="space-y-2">
-                <Label>Study Description *</Label>
+                <Label>{t('appointments.studyDescription')} *</Label>
                 <Input {...form.register('study_description')} placeholder="Chest X-Ray PA/Lateral" />
                 {form.formState.errors.study_description && (
                   <p className="text-sm text-destructive">{form.formState.errors.study_description.message}</p>
@@ -257,7 +259,7 @@ export function AppointmentFormPage() {
 
               {/* Referring Physician */}
               <div className="space-y-2">
-                <Label>Referring Physician</Label>
+                <Label>{t('appointments.referringPhysician')}</Label>
                 <div className="flex gap-2">
                   <Controller
                     control={form.control}
@@ -268,7 +270,7 @@ export function AppointmentFormPage() {
                         onValueChange={(v) => field.onChange(v)}
                       >
                         <SelectTrigger className="flex-1">
-                          <SelectValue placeholder="Select a physician (optional)" />
+                          <SelectValue placeholder={t('appointments.selectPhysician')} />
                         </SelectTrigger>
                         <SelectContent>
                           {physicians?.map((ph) => (
@@ -293,7 +295,7 @@ export function AppointmentFormPage() {
 
               {/* Clinical Indication */}
               <div className="space-y-2 md:col-span-2">
-                <Label>Clinical Indication</Label>
+                <Label>{t('appointments.clinicalIndication')}</Label>
                 <Input
                   {...form.register('clinical_indication')}
                   placeholder="Suspected pneumonia, cough for 2 weeks"
@@ -306,15 +308,14 @@ export function AppointmentFormPage() {
         {/* ── Section 2: Radiologist & Time Slot ── */}
         <Card>
           <CardHeader>
-            <CardTitle>Radiologist &amp; Time Slot</CardTitle>
+            <CardTitle>{t('appointments.radiologistTimeSlot')}</CardTitle>
             <CardDescription>
-              Pick a date to see radiologist availability. The modality selected above filters
-              the available slots. Select a slot to assign the radiologist and schedule the time.
+              {t('appointments.radiologistTimeSlotDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Date *</Label>
+              <Label>{t('appointments.date')} *</Label>
               <Input
                 type="date"
                 value={selectedDate}
@@ -342,17 +343,17 @@ export function AppointmentFormPage() {
                     disabled={isFetchingSlots}
                   >
                     <RefreshCw className={cn('h-3.5 w-3.5 mr-1', isFetchingSlots && 'animate-spin')} />
-                    Refresh
+                    {t('common.refresh')}
                   </Button>
                 </div>
 
                 {isFetchingSlots ? (
-                  <LoadingSpinner text="Fetching available slots…" />
+                  <LoadingSpinner text={t('appointments.fetchingSlots')} />
                 ) : slotsError ? (
-                  <p className="text-sm text-destructive">Failed to load slots. Try refreshing.</p>
+                  <p className="text-sm text-destructive">{t('appointments.failedLoadSlots')}</p>
                 ) : slotsData && slotsData.slots.length === 0 ? (
                   <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
-                    No slots available on this date. Please try another date.
+                    {t('appointments.noSlotsAvailable')}
                   </div>
                 ) : slotsData ? (
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -386,7 +387,7 @@ export function AppointmentFormPage() {
                           <span className="text-xs text-muted-foreground">{slot.slot_duration_minutes} min</span>
                           {isSelected && (
                             <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                              <CalendarCheck className="h-3 w-3" /> Selected
+                              <CalendarCheck className="h-3 w-3" /> {t('common.selected')}
                             </span>
                           )}
                         </button>
@@ -401,25 +402,25 @@ export function AppointmentFormPage() {
             {selectedSlot ? (
               <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 p-3">
                 <div className="text-sm">
-                  <p className="font-semibold text-primary">Slot selected</p>
+                  <p className="font-semibold text-primary">{t('appointments.slotSelected')}</p>
                   <p className="text-muted-foreground">
                     <span className="font-medium text-foreground">{selectedSlot.radiologist_name}</span>
                     {' '}· {format(parseISO(selectedSlot.start), 'h:mm a')} – {format(parseISO(selectedSlot.end), 'h:mm a')}
                   </p>
                 </div>
                 <Button type="button" variant="ghost" size="sm" onClick={handleClearSlot}>
-                  <X className="h-4 w-4 mr-1" /> Clear
+                  <X className="h-4 w-4 mr-1" /> {t('common.clear')}
                 </Button>
               </div>
             ) : isEditing && currentScheduledAt && currentRadiologistId ? (
               <div className="rounded-md border bg-muted p-3 text-sm">
-                <p className="font-medium">Current assignment</p>
+                <p className="font-medium">{t('appointments.currentAssignment')}</p>
                 <p className="text-muted-foreground">
                   Radiologist ID: {currentRadiologistId.slice(0, 8)}…
                   {' '}· {format(parseISO(currentScheduledAt), 'PPp')}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Select a date above and choose a new slot to reassign.
+                  {t('appointments.selectNewSlot')}
                 </p>
               </div>
             ) : null}
@@ -436,17 +437,17 @@ export function AppointmentFormPage() {
             variant="outline"
             onClick={() => navigate(isEditing ? `/appointments/${id}` : '/appointments')}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             type="submit"
             disabled={createAppointment.isPending || updateAppointment.isPending}
           >
             {createAppointment.isPending || updateAppointment.isPending
-              ? 'Saving…'
+              ? t('common.saving')
               : isEditing
-              ? 'Update Appointment'
-              : 'Create Appointment'}
+              ? t('appointments.updateAppointment')
+              : t('appointments.createAppointment')}
           </Button>
         </div>
       </form>

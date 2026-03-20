@@ -25,8 +25,9 @@ import { getErrorMessage } from '@/api/client'
 import { useToast } from '@/hooks/use-toast'
 import { Trash2, Plus, CalendarClock } from 'lucide-react'
 import type { Modality } from '@/types'
+import { useTranslation } from 'react-i18next'
 
-const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
 
 const scheduleSchema = z.object({
   radiologist_id: z.string().min(1, 'Radiologist is required'),
@@ -41,6 +42,7 @@ type ScheduleFormData = z.infer<typeof scheduleSchema>
 
 export function ScheduleManagementPage() {
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [filterRadiologistId, setFilterRadiologistId] = useState<string>('')
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
@@ -75,7 +77,7 @@ export function ScheduleManagementPage() {
         slot_duration_minutes: data.slot_duration_minutes,
         modality: (data.modality as Modality) || undefined,
       })
-      toast({ title: 'Schedule added', description: 'Availability window created successfully.' })
+      toast({ title: t('schedule.scheduleAdded'), description: t('schedule.scheduleAddedDesc') })
       form.reset({
         radiologist_id: data.radiologist_id,
         day_of_week: 0,
@@ -87,7 +89,7 @@ export function ScheduleManagementPage() {
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'Failed to add schedule',
+        title: t('schedule.failedToAddSchedule'),
         description: getErrorMessage(error),
       })
     }
@@ -97,11 +99,11 @@ export function ScheduleManagementPage() {
     if (!deleteTarget) return
     try {
       await deleteSchedule.mutateAsync(deleteTarget)
-      toast({ title: 'Schedule removed', description: 'Availability window deactivated.' })
+      toast({ title: t('schedule.scheduleRemoved'), description: t('schedule.scheduleRemovedDesc') })
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'Delete failed',
+        title: t('schedule.deleteFailed'),
         description: getErrorMessage(error),
       })
     } finally {
@@ -117,9 +119,9 @@ export function ScheduleManagementPage() {
       <div className="flex items-center gap-3">
         <CalendarClock className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-3xl font-bold">Schedule Management</h1>
+          <h1 className="text-3xl font-bold">{t('schedule.title')}</h1>
           <p className="text-sm text-muted-foreground">
-            Manage radiologist weekly availability templates
+            {t('schedule.subtitle')}
           </p>
         </div>
       </div>
@@ -128,11 +130,10 @@ export function ScheduleManagementPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" /> Add Availability Window
+            <Plus className="h-5 w-5" /> {t('schedule.addAvailabilityWindow')}
           </CardTitle>
           <CardDescription>
-            Define a recurring weekly time block for a radiologist. Each block generates
-            appointment slots of the specified duration.
+            {t('schedule.addAvailabilityDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -140,13 +141,13 @@ export function ScheduleManagementPage() {
             <div className="grid gap-4 md:grid-cols-3">
               {/* Radiologist */}
               <div className="space-y-2">
-                <Label>Radiologist *</Label>
+                <Label>{t('schedule.radiologist')} *</Label>
                 <Select
                   value={form.watch('radiologist_id')}
                   onValueChange={(v) => form.setValue('radiologist_id', v, { shouldValidate: true })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select radiologist" />
+                    <SelectValue placeholder={t('schedule.selectRadiologist')} />
                   </SelectTrigger>
                   <SelectContent>
                     {radiologists.map((r) => (
@@ -161,15 +162,15 @@ export function ScheduleManagementPage() {
 
               {/* Day of week */}
               <div className="space-y-2">
-                <Label>Day of Week *</Label>
+                <Label>{t('schedule.dayOfWeek')} *</Label>
                 <Select
                   value={String(form.watch('day_of_week'))}
                   onValueChange={(v) => form.setValue('day_of_week', Number(v))}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {DAY_NAMES.map((day, i) => (
-                      <SelectItem key={i} value={String(i)}>{day}</SelectItem>
+                    {DAY_KEYS.map((day, i) => (
+                      <SelectItem key={i} value={String(i)}>{t(`schedule.${day}`)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -177,26 +178,26 @@ export function ScheduleManagementPage() {
 
               {/* Modality (optional) */}
               <div className="space-y-2">
-                <Label>Modality (optional)</Label>
+                <Label>{t('schedule.modality')}</Label>
                 <Select
                   value={form.watch('modality') || '__none__'}
                   onValueChange={(v) => form.setValue('modality', v === '__none__' ? '' : v as Modality)}
                 >
-                  <SelectTrigger><SelectValue placeholder="All modalities" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('schedule.allModalities')} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">All modalities</SelectItem>
-                    <SelectItem value="XR">X-Ray (XR)</SelectItem>
-                    <SelectItem value="CT">CT Scan</SelectItem>
-                    <SelectItem value="US">Ultrasound (US)</SelectItem>
-                    <SelectItem value="MRI">MRI</SelectItem>
-                    <SelectItem value="MAMMO">Mammography</SelectItem>
+                    <SelectItem value="__none__">{t('schedule.allModalities')}</SelectItem>
+                    <SelectItem value="XR">{t('modalities.XR')}</SelectItem>
+                    <SelectItem value="CT">{t('modalities.CT')}</SelectItem>
+                    <SelectItem value="US">{t('modalities.US')}</SelectItem>
+                    <SelectItem value="MRI">{t('modalities.MRI')}</SelectItem>
+                    <SelectItem value="MAMMO">{t('modalities.MAMMO')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Start time */}
               <div className="space-y-2">
-                <Label>Start Time *</Label>
+                <Label>{t('schedule.startTime')} *</Label>
                 <Input type="time" {...form.register('start_time')} />
                 {form.formState.errors.start_time && (
                   <p className="text-sm text-destructive">{form.formState.errors.start_time.message}</p>
@@ -205,7 +206,7 @@ export function ScheduleManagementPage() {
 
               {/* End time */}
               <div className="space-y-2">
-                <Label>End Time *</Label>
+                <Label>{t('schedule.endTime')} *</Label>
                 <Input type="time" {...form.register('end_time')} />
                 {form.formState.errors.end_time && (
                   <p className="text-sm text-destructive">{form.formState.errors.end_time.message}</p>
@@ -214,7 +215,7 @@ export function ScheduleManagementPage() {
 
               {/* Slot duration */}
               <div className="space-y-2">
-                <Label>Slot Duration (min) *</Label>
+                <Label>{t('schedule.slotDuration')} *</Label>
                 <Input
                   type="number"
                   min={5}
@@ -229,7 +230,7 @@ export function ScheduleManagementPage() {
 
             <div className="flex justify-end">
               <Button type="submit" disabled={createSchedule.isPending}>
-                {createSchedule.isPending ? 'Saving…' : 'Add Availability Window'}
+                {createSchedule.isPending ? t('common.saving') : t('schedule.addAvailabilityWindow')}
               </Button>
             </div>
           </form>
@@ -240,18 +241,18 @@ export function ScheduleManagementPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Active Availability Templates</CardTitle>
+            <CardTitle>{t('schedule.activeTemplates')}</CardTitle>
             <div className="flex items-center gap-2">
-              <Label className="text-sm text-muted-foreground">Filter by radiologist:</Label>
+              <Label className="text-sm text-muted-foreground">{t('schedule.filterByRadiologist')}</Label>
               <Select
                 value={filterRadiologistId || '__all__'}
                 onValueChange={(v) => setFilterRadiologistId(v === '__all__' ? '' : v)}
               >
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="All radiologists" />
+                  <SelectValue placeholder={t('schedule.allRadiologists')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__all__">All radiologists</SelectItem>
+                  <SelectItem value="__all__">{t('schedule.allRadiologists')}</SelectItem>
                   {radiologists.map((r) => (
                     <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>
                   ))}
@@ -259,7 +260,7 @@ export function ScheduleManagementPage() {
               </Select>
               {filterRadiologistId && (
                 <Button variant="ghost" size="sm" onClick={() => setFilterRadiologistId('')}>
-                  Clear
+                  {t('common.clear')}
                 </Button>
               )}
             </div>
@@ -267,22 +268,22 @@ export function ScheduleManagementPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <LoadingSpinner text="Loading schedules…" />
+            <LoadingSpinner text={t('schedule.loadingSchedules')} />
           ) : isError ? (
-            <ErrorAlert message="Failed to load schedules." />
+            <ErrorAlert message={t('schedule.failedToLoadSchedules')} />
           ) : !schedules || schedules.length === 0 ? (
             <p className="text-center text-sm text-muted-foreground py-8">
-              No availability templates found.
+              {t('schedule.noTemplatesFound')}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Radiologist</TableHead>
-                  <TableHead>Day</TableHead>
-                  <TableHead>Hours</TableHead>
-                  <TableHead>Slot Duration</TableHead>
-                  <TableHead>Modality</TableHead>
+                  <TableHead>{t('schedule.radiologist')}</TableHead>
+                  <TableHead>{t('schedule.day')}</TableHead>
+                  <TableHead>{t('schedule.hours')}</TableHead>
+                  <TableHead>{t('schedule.slotDurationCol')}</TableHead>
+                  <TableHead>{t('schedule.modalityCol')}</TableHead>
                   <TableHead className="w-16" />
                 </TableRow>
               </TableHeader>
@@ -292,7 +293,7 @@ export function ScheduleManagementPage() {
                     <TableCell className="font-medium">
                       {s.radiologist?.full_name ?? getRadiologistName(s.radiologist_id)}
                     </TableCell>
-                    <TableCell>{DAY_NAMES[s.day_of_week]}</TableCell>
+                    <TableCell>{t(`schedule.${DAY_KEYS[s.day_of_week]}`)}</TableCell>
                     <TableCell>
                       {s.start_time} – {s.end_time}
                     </TableCell>
@@ -301,7 +302,7 @@ export function ScheduleManagementPage() {
                       {s.modality ? (
                         <Badge variant="secondary">{s.modality}</Badge>
                       ) : (
-                        <span className="text-muted-foreground text-sm">All</span>
+                        <span className="text-muted-foreground text-sm">{t('common.all')}</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -310,7 +311,7 @@ export function ScheduleManagementPage() {
                         size="icon"
                         className="text-destructive hover:text-destructive"
                         onClick={() => setDeleteTarget(s.id)}
-                        title="Remove availability window"
+                        title={t('schedule.removeAvailabilityWindow')}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -326,9 +327,9 @@ export function ScheduleManagementPage() {
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
-        title="Remove Availability Window"
-        message="This will deactivate the schedule template. Existing appointments are not affected. Continue?"
-        confirmLabel="Remove"
+        title={t('schedule.removeAvailabilityWindow')}
+        message={t('schedule.removeAvailabilityMsg')}
+        confirmLabel={t('common.remove')}
         onConfirm={handleDelete}
         isLoading={deleteSchedule.isPending}
       />

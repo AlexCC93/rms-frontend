@@ -9,9 +9,11 @@ import { format } from 'date-fns'
 import { ModalityBadge } from '@/components/shared/ModalityBadge'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { Modality } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 export function TimelinePage() {
   const { patientId } = useParams<{ patientId: string }>()
+  const { t } = useTranslation()
   const [modalityFilter] = useState<Modality[]>([])
 
   const { data: timeline, isLoading, error } = useTimeline({
@@ -20,7 +22,7 @@ export function TimelinePage() {
   })
 
   if (isLoading) {
-    return <LoadingSpinner text="Loading timeline..." />
+    return <LoadingSpinner text={t('timeline.loadingTimeline')} />
   }
 
   if (error) {
@@ -30,14 +32,14 @@ export function TimelinePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Imaging Timeline</h1>
+        <h1 className="text-3xl font-bold">{t('timeline.title')}</h1>
       </div>
 
       {!timeline || timeline.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-          <p className="text-lg font-medium">No imaging history found</p>
+          <p className="text-lg font-medium">{t('timeline.noHistory')}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            This patient has no imaging history yet
+            {t('timeline.noHistoryDesc')}
           </p>
         </div>
       ) : (
@@ -63,19 +65,19 @@ export function TimelinePage() {
               <CardContent>
                 {entry.report_id ? (
                   <div>
-                    <p className="text-sm font-medium mb-2">Impression:</p>
+                    <p className="text-sm font-medium mb-2">{t('timeline.impression')}</p>
                     <div className="rounded-md bg-gray-50 p-3 text-sm whitespace-pre-wrap">
                       {entry.report_impression}
                     </div>
                     {entry.finalized_at && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        Finalized {format(new Date(entry.finalized_at), 'MMM d, yyyy HH:mm')}
+                        {t('timeline.finalized', { date: format(new Date(entry.finalized_at), 'MMM d, yyyy HH:mm') })}
                       </p>
                     )}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    No report available
+                    {t('timeline.noReportAvailable')}
                   </p>
                 )}
               </CardContent>

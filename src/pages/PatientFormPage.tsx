@@ -14,6 +14,7 @@ import { getErrorMessage } from '@/api/client'
 import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft } from 'lucide-react'
 import type { Sex } from '@/types'
+import { useTranslation } from 'react-i18next'
 
 const patientSchema = z.object({
   first_name: z.string().min(1, 'First name is required').max(50),
@@ -32,6 +33,7 @@ export function PatientFormPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const isEditing = id !== undefined
 
   const { data: patient, isLoading: isLoadingPatient } = usePatient(isEditing ? id : undefined)
@@ -83,8 +85,8 @@ export function PatientFormPage() {
           },
         })
         toast({
-          title: 'Patient updated',
-          description: 'Patient information has been updated successfully.',
+          title: t('patients.patientUpdated'),
+          description: t('patients.patientUpdatedDesc'),
         })
       } else {
         const newPatient = await createPatient.mutateAsync({
@@ -94,8 +96,8 @@ export function PatientFormPage() {
           notes: data.notes || undefined,
         })
         toast({
-          title: 'Patient created',
-          description: 'New patient has been created successfully.',
+          title: t('patients.patientCreated'),
+          description: t('patients.patientCreatedDesc'),
         })
         navigate(`/patients/${newPatient.id}`)
         return
@@ -104,14 +106,14 @@ export function PatientFormPage() {
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: isEditing ? 'Update failed' : 'Creation failed',
+        title: isEditing ? t('patients.updateFailed') : t('patients.creationFailed'),
         description: getErrorMessage(error),
       })
     }
   }
 
   if (isEditing && isLoadingPatient) {
-    return <LoadingSpinner text="Loading patient..." />
+    return <LoadingSpinner text={t('patients.loadingPatient')} />
   }
 
   return (
@@ -125,24 +127,24 @@ export function PatientFormPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-3xl font-bold">
-          {isEditing ? 'Edit Patient' : 'New Patient'}
+          {isEditing ? t('patients.editPatient') : t('patients.newPatient')}
         </h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Patient Information</CardTitle>
+          <CardTitle>{t('patients.patientInformation')}</CardTitle>
           <CardDescription>
             {isEditing
-              ? 'Update patient demographic and contact information'
-              : 'Enter patient demographic and contact information'}
+              ? t('patients.updateInfo')
+              : t('patients.enterInfo')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="first_name">First Name *</Label>
+                <Label htmlFor="first_name">{t('patients.firstName')} *</Label>
                 <Input
                   id="first_name"
                   {...form.register('first_name')}
@@ -156,7 +158,7 @@ export function PatientFormPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name *</Label>
+                <Label htmlFor="last_name">{t('patients.lastName')} *</Label>
                 <Input
                   id="last_name"
                   {...form.register('last_name')}
@@ -170,7 +172,7 @@ export function PatientFormPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="date_of_birth">Date of Birth *</Label>
+                <Label htmlFor="date_of_birth">{t('patients.dateOfBirth')} *</Label>
                 <Input
                   id="date_of_birth"
                   type="date"
@@ -184,7 +186,7 @@ export function PatientFormPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sex">Sex *</Label>
+                <Label htmlFor="sex">{t('patients.sex')} *</Label>
                 <Select
                   value={form.watch('sex')}
                   onValueChange={(value) => form.setValue('sex', value as Sex)}
@@ -193,10 +195,10 @@ export function PatientFormPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                    <SelectItem value="unknown">Unknown</SelectItem>
+                    <SelectItem value="male">{t('patients.male')}</SelectItem>
+                    <SelectItem value="female">{t('patients.female')}</SelectItem>
+                    <SelectItem value="other">{t('patients.other')}</SelectItem>
+                    <SelectItem value="unknown">{t('patients.sexUnknown')}</SelectItem>
                   </SelectContent>
                 </Select>
                 {form.formState.errors.sex && (
@@ -207,7 +209,7 @@ export function PatientFormPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="national_id">National ID *</Label>
+                <Label htmlFor="national_id">{t('patients.nationalId')} *</Label>
                 <Input
                   id="national_id"
                   {...form.register('national_id')}
@@ -221,7 +223,7 @@ export function PatientFormPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">{t('patients.phone')}</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -236,7 +238,7 @@ export function PatientFormPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('patients.emailField')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -251,7 +253,7 @@ export function PatientFormPage() {
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes">{t('patients.notes')}</Label>
                 <Input
                   id="notes"
                   {...form.register('notes')}
@@ -271,17 +273,17 @@ export function PatientFormPage() {
                 variant="outline"
                 onClick={() => navigate(isEditing ? `/patients/${id}` : '/patients')}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={createPatient.isPending || updatePatient.isPending}
               >
                 {createPatient.isPending || updatePatient.isPending
-                  ? 'Saving...'
+                  ? t('common.saving')
                   : isEditing
-                  ? 'Update Patient'
-                  : 'Create Patient'}
+                  ? t('patients.updatePatient')
+                  : t('patients.createPatient')}
               </Button>
             </div>
           </form>

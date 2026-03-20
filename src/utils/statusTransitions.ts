@@ -1,4 +1,5 @@
 import type { AppointmentStatus } from '@/types'
+import i18next from 'i18next'
 
 export const getAvailableStatusTransitions = (
   currentStatus: AppointmentStatus
@@ -19,11 +20,11 @@ export const getAvailableStatusTransitions = (
 export const getStatusTransitionLabel = (status: AppointmentStatus): string => {
   switch (status) {
     case 'completed':
-      return 'Mark Completed'
+      return i18next.t('appointments.markCompleted')
     case 'canceled':
-      return 'Cancel'
+      return i18next.t('appointments.markCanceled')
     case 'no_show':
-      return 'Mark No Show'
+      return i18next.t('appointments.markNoShow')
     default:
       return status
   }

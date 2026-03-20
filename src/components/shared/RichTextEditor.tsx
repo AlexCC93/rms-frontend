@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/dicom']
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
@@ -101,6 +102,7 @@ export function RichTextEditor({
   minHeight = '180px',
 }: RichTextEditorProps) {
   const { toast } = useToast()
+  const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
@@ -136,16 +138,16 @@ export function RichTextEditor({
       if (!ALLOWED_MIME_TYPES.includes(file.type)) {
         toast({
           variant: 'destructive',
-          title: 'Unsupported file type',
-          description: `"${file.name}" is not a supported format. Use JPEG, PNG, GIF, WebP, or DICOM.`,
+          title: t('images.unsupportedFileType'),
+          description: t('images.unsupportedFileTypeDesc', { name: file.name }),
         })
         return
       }
       if (file.size > MAX_FILE_SIZE_BYTES) {
         toast({
           variant: 'destructive',
-          title: 'File too large',
-          description: `"${file.name}" exceeds the 10 MB limit.`,
+          title: t('images.fileTooLarge'),
+          description: t('images.fileTooLargeDesc', { name: file.name }),
         })
         return
       }
@@ -172,8 +174,8 @@ export function RichTextEditor({
       } catch {
         toast({
           variant: 'destructive',
-          title: 'Image insert failed',
-          description: 'Could not attach the image. Please try again.',
+          title: t('images.imageInsertFailed'),
+          description: t('images.imageInsertFailedDesc'),
         })
       }
     },
@@ -226,14 +228,14 @@ export function RichTextEditor({
           <ToolbarButton
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo()}
-            title="Undo"
+            title={t('editor.undo')}
           >
             <Undo2 className="h-3.5 w-3.5" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().redo()}
-            title="Redo"
+            title={t('editor.redo')}
           >
             <Redo2 className="h-3.5 w-3.5" />
           </ToolbarButton>
@@ -246,10 +248,10 @@ export function RichTextEditor({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="p" className="text-xs">Paragraph</SelectItem>
-              <SelectItem value="h1" className="text-xs">Heading 1</SelectItem>
-              <SelectItem value="h2" className="text-xs">Heading 2</SelectItem>
-              <SelectItem value="h3" className="text-xs">Heading 3</SelectItem>
+              <SelectItem value="p" className="text-xs">{t('editor.paragraph')}</SelectItem>
+              <SelectItem value="h1" className="text-xs">{t('editor.heading1')}</SelectItem>
+              <SelectItem value="h2" className="text-xs">{t('editor.heading2')}</SelectItem>
+              <SelectItem value="h3" className="text-xs">{t('editor.heading3')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -259,14 +261,14 @@ export function RichTextEditor({
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleBold().run()}
             active={editor.isActive('bold')}
-            title="Bold"
+            title={t('editor.bold')}
           >
             <Bold className="h-3.5 w-3.5" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleItalic().run()}
             active={editor.isActive('italic')}
-            title="Italic"
+            title={t('editor.italic')}
           >
             <Italic className="h-3.5 w-3.5" />
           </ToolbarButton>
@@ -277,28 +279,28 @@ export function RichTextEditor({
           <ToolbarButton
             onClick={() => editor.chain().focus().setTextAlign('left').run()}
             active={editor.isActive({ textAlign: 'left' })}
-            title="Align left"
+            title={t('editor.alignLeft')}
           >
             <AlignLeft className="h-3.5 w-3.5" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().setTextAlign('center').run()}
             active={editor.isActive({ textAlign: 'center' })}
-            title="Align center"
+            title={t('editor.alignCenter')}
           >
             <AlignCenter className="h-3.5 w-3.5" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().setTextAlign('right').run()}
             active={editor.isActive({ textAlign: 'right' })}
-            title="Align right"
+            title={t('editor.alignRight')}
           >
             <AlignRight className="h-3.5 w-3.5" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().setTextAlign('justify').run()}
             active={editor.isActive({ textAlign: 'justify' })}
-            title="Justify"
+            title={t('editor.justify')}
           >
             <AlignJustify className="h-3.5 w-3.5" />
           </ToolbarButton>
@@ -308,7 +310,7 @@ export function RichTextEditor({
           {/* Insert image */}
           <ToolbarButton
             onClick={() => fileInputRef.current?.click()}
-            title="Insert image"
+            title={t('editor.insertImage')}
           >
             <ImageIcon className="h-3.5 w-3.5" />
           </ToolbarButton>

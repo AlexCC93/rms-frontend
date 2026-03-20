@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useTranslation } from 'react-i18next'
 
 function ReportRow({ report, onClick }: { report: RadiologyReport; onClick: () => void }) {
   const { data: appointment } = useAppointment(report.appointment_id)
@@ -64,6 +65,7 @@ function ReportRow({ report, onClick }: { report: RadiologyReport; onClick: () =
 
 export function ReportsPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('all')
 
   const filters = statusFilter !== 'all' ? { status: statusFilter } : undefined
@@ -71,7 +73,7 @@ export function ReportsPage() {
   const { data: reports, isLoading, error } = useReports(filters)
 
   if (isLoading) {
-    return <LoadingSpinner text="Loading reports..." />
+    return <LoadingSpinner text={t('reports.loadingReports')} />
   }
 
   if (error) {
@@ -81,7 +83,7 @@ export function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Reports</h1>
+        <h1 className="text-3xl font-bold">{t('reports.title')}</h1>
       </div>
 
       <div className="flex gap-4">
@@ -90,22 +92,22 @@ export function ReportsPage() {
           onValueChange={(value) => setStatusFilter(value as ReportStatus | 'all')}
         >
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder={t('reports.filterByStatus')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="final">Final</SelectItem>
-            <SelectItem value="amended">Amended</SelectItem>
+            <SelectItem value="all">{t('reports.allStatuses')}</SelectItem>
+            <SelectItem value="draft">{t('reports.draft')}</SelectItem>
+            <SelectItem value="final">{t('reports.final')}</SelectItem>
+            <SelectItem value="amended">{t('reports.amended')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {!reports || !Array.isArray(reports) || reports.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-          <p className="text-lg font-medium">No reports found</p>
+          <p className="text-lg font-medium">{t('reports.noResults')}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Reports are created from completed appointments
+            {t('reports.reportsCreatedFromAppointments')}
           </p>
         </div>
       ) : (
@@ -113,13 +115,13 @@ export function ReportsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Patient Name</TableHead>
-                <TableHead>Modality</TableHead>
-                <TableHead>Radiologist</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Version</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Finalized At</TableHead>
+                <TableHead>{t('reports.patientName')}</TableHead>
+                <TableHead>{t('reports.modality')}</TableHead>
+                <TableHead>{t('reports.radiologist')}</TableHead>
+                <TableHead>{t('reports.status')}</TableHead>
+                <TableHead>{t('reports.version')}</TableHead>
+                <TableHead>{t('reports.createdAt')}</TableHead>
+                <TableHead>{t('reports.finalizedAt')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

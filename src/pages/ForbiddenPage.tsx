@@ -2,9 +2,11 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShieldAlert, Home } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export function ForbiddenPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -13,19 +15,18 @@ export function ForbiddenPage() {
           <div className="flex justify-center mb-4">
             <ShieldAlert className="h-16 w-16 text-destructive" />
           </div>
-          <CardTitle className="text-3xl">403 - Access Forbidden</CardTitle>
+          <CardTitle className="text-3xl">{t('forbidden.title')}</CardTitle>
           <CardDescription>
-            You don't have permission to access this page
+            {t('forbidden.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            This page requires specific permissions that your account doesn't have.
-            Please contact an administrator if you believe this is an error.
+            {t('forbidden.message')}
           </p>
           <Button onClick={() => navigate('/dashboard')}>
             <Home className="mr-2 h-4 w-4" />
-            Go to Dashboard
+            {t('forbidden.goToDashboard')}
           </Button>
         </CardContent>
       </Card>

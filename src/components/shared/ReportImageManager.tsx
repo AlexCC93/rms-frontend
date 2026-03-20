@@ -10,6 +10,7 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import type { ReportImage, ReportStatus, UserRole } from '@/types'
 import { format } from 'date-fns'
 import { Upload, Trash2, Download, ImageIcon, FileIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -129,6 +130,7 @@ interface DropZoneProps {
 }
 
 function DropZone({ onFiles, isUploading }: DropZoneProps) {
+  const { t } = useTranslation()
   const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -168,10 +170,10 @@ function DropZone({ onFiles, isUploading }: DropZoneProps) {
       <Upload className="h-8 w-8 text-muted-foreground" />
       <div className="text-center">
         <p className="text-sm font-medium">
-          {isUploading ? 'Uploading…' : 'Drop files here or click to upload'}
+          {isUploading ? t('images.uploading') : t('images.dropFilesOrClick')}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          JPEG, PNG, GIF, WebP, DICOM · max 10 MB each
+          {t('images.fileConstraints')}
         </p>
       </div>
       <input
@@ -204,6 +206,7 @@ export function ReportImageManager({
   currentUserRole,
 }: ReportImageManagerProps) {
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [imageToDelete, setImageToDelete] = useState<ReportImage | null>(null)
 
   const { data: images = [], isLoading } = useReportImages(reportId)
@@ -225,16 +228,16 @@ export function ReportImageManager({
       if (!ALLOWED_MIME_TYPES.includes(file.type)) {
         toast({
           variant: 'destructive',
-          title: 'Unsupported file type',
-          description: `"${file.name}" is not a supported format. Use JPEG, PNG, GIF, WebP, or DICOM.`,
+          title: t('images.unsupportedFileType'),
+          description: t('images.unsupportedFileTypeDesc', { name: file.name }),
         })
         continue
       }
       if (file.size > MAX_FILE_SIZE_BYTES) {
         toast({
           variant: 'destructive',
-          title: 'File too large',
-          description: `"${file.name}" exceeds the 10 MB limit (${formatBytes(file.size)}).`,
+          title: t('images.fileTooLarge'),
+          description: t('images.fileTooLargeDesc', { name: file.name, size: formatBytes(file.size) }),
         })
         continue
       }
@@ -242,13 +245,13 @@ export function ReportImageManager({
       try {
         await uploadImage.mutateAsync({ reportId, file })
         toast({
-          title: 'Image uploaded',
-          description: `"${file.name}" has been attached to this report.`,
+          title: t('images.imageUploaded'),
+          description: t('images.imageUploadedDesc', { name: file.name }),
         })
       } catch (err) {
         toast({
           variant: 'destructive',
-          title: 'Upload failed',
+          title: t('images.uploadFailed'),
           description: getErrorMessage(err),
         })
       }
@@ -260,8 +263,8 @@ export function ReportImageManager({
     try {
       await deleteImage.mutateAsync({ reportId, imageId: imageToDelete.id })
       toast({
-        title: 'Image removed',
-        description: `"${imageToDelete.filename}" has been removed from this report.`,
+        title: t('images.imageRemoved'),
+        description: t('images.imageRemovedDesc', { name: imageToDelete.filename }),
       })
     } catch (err) {
       toast({
@@ -280,7 +283,7 @@ export function ReportImageManager({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
-            Images
+            {t('images.title')}
             {images.length > 0 && (
               <span className="ml-1 text-sm font-normal text-muted-foreground">
                 ({images.length})
@@ -291,9 +294,9 @@ export function ReportImageManager({
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoading ? (
-          <LoadingSpinner text="Loading images…" />
+          <LoadingSpinner text={t('images.loadingImages')} />
         ) : images.length === 0 && !canManageImages ? (
-          <p className="text-sm text-muted-foreground">No images attached to this report.</p>
+          <p className="text-sm text-muted-foreground">{t('images.noImagesAttached')}</p>
         ) : (
           <>
             {images.length > 0 && (
@@ -318,7 +321,7 @@ export function ReportImageManager({
             )}
 
             {!canManageImages && images.length === 0 && (
-              <p className="text-sm text-muted-foreground">No images attached to this report.</p>
+              <p className="text-sm text-muted-foreground">{t('images.noImagesAttached')}</p>
             )}
           </>
         )}
@@ -327,9 +330,9 @@ export function ReportImageManager({
       <ConfirmDialog
         open={!!imageToDelete}
         onOpenChange={(open) => { if (!open) setImageToDelete(null) }}
-        title="Remove Image"
-        message={`Remove "${imageToDelete?.filename}" from this report? This action cannot be undone.`}
-        confirmLabel="Remove"
+        title={t('images.removeImage')}
+        message={t('images.removeImageMsg', { name: imageToDelete?.filename })}
+        confirmLabel={t('common.remove')}
         onConfirm={handleDeleteConfirm}
         isLoading={deleteImage.isPending}
       />
