@@ -1,6 +1,8 @@
 # RMS-lite Frontend — Codebase Reference
 
-**Stack:** React 18, TypeScript, Vite, TailwindCSS, shadcn/ui, TanStack Query v5, React Router v6, Zustand, React Hook Form + Zod, Tiptap (rich-text editor).
+**Stack:** React 18, TypeScript, Vite, TailwindCSS, shadcn/ui, TanStack Query v5, React Router v6, Zustand, React Hook Form + Zod, Tiptap (rich-text editor), i18next + react-i18next (multilingual EN/ES).
+
+**Deployment:** Vercel (SPA). `vercel.json` rewrites all routes to `/index.html` for client-side routing.
 
 **Backend base URL:** `http://localhost:8000` (configured via `VITE_API_BASE_URL` env var). All API paths start with `/api/v1/`.
 
@@ -11,17 +13,22 @@
 ## Directory Structure
 
 ```
+vercel.json              # Vercel SPA rewrite rules
 src/
-  main.tsx               # App entry point
+  main.tsx               # App entry point (imports i18n)
   App.tsx                # Root component
   index.css              # Global styles (Tailwind base)
   vite-env.d.ts          # Vite type shims
   api/                   # Raw HTTP calls (axios wrappers)
   components/
     layout/              # App shell, sidebar, top bar
-    shared/              # Reusable UI building blocks
+    shared/              # Reusable UI building blocks + LanguageSwitcher
     ui/                  # shadcn/ui primitives
   hooks/                 # TanStack Query hooks (data fetching + mutations)
+  i18n/                  # Internationalization config & translation files
+    index.ts             # i18next init (LanguageDetector, EN/ES)
+    en.json              # English translations (~250+ keys)
+    es.json              # Spanish translations (mirrors en.json)
   lib/                   # Utility functions
   pages/                 # Route-level page components
   router/                # Route definitions and auth guards
@@ -35,7 +42,7 @@ src/
 ## Entry & Bootstrap
 
 ### `src/main.tsx`
-App entry point. Creates the React root, wraps the app in `QueryClientProvider` (TanStack Query), configures global query defaults: `retry: 1`, `refetchOnWindowFocus: false`, `staleTime: 30000`.
+App entry point. Imports `./i18n` to initialise i18next before rendering. Creates the React root, wraps the app in `QueryClientProvider` (TanStack Query), configures global query defaults: `retry: 1`, `refetchOnWindowFocus: false`, `staleTime: 30000`.
 
 ### `src/App.tsx`
 Root component. Wraps `AppRouter` in `BrowserRouter` and renders the global `Toaster` for toast notifications.
@@ -237,14 +244,16 @@ Zustand store for authentication state. Fields: `user`, `accessToken`, `refreshT
 
 ## Pages — `src/pages/`
 
+All pages use the `useTranslation()` hook from react-i18next — every user-visible string is rendered via `t()` calls. All pages include responsive Tailwind classes for mobile-friendly layouts (see **Mobile Responsiveness** section below).
+
 ### `src/pages/LoginPage.tsx`
-Public login form (email + password, Zod-validated). If user is already logged in, redirects to `/dashboard`. On success, navigation is handled by the `useEffect` watching `user` in `authStore`.
+Public login form (email + password, Zod-validated). If user is already logged in, redirects to `/dashboard`. On success, navigation is handled by the `useEffect` watching `user` in `authStore`. Includes a `LanguageSwitcher` for pre-login language selection.
 
 ### `src/pages/DashboardPage.tsx`
-Home page after login. Fetches `DashboardStats` and renders KPI stat blocks (today's appointments by status, monthly metrics, pending reports list). Gracefully degrades to a simplified nav-card layout if the `/dashboard/stats` endpoint returns 404.
+Home page after login. Fetches `DashboardStats` and renders KPI stat blocks (today's appointments by status, monthly metrics, pending reports list). Gracefully degrades to a simplified nav-card layout if the `/dashboard/stats` endpoint returns 404. Stat grid uses `grid-cols-2 lg:grid-cols-4` for mobile. Action buttons use `size="sm"` with `flex-wrap`.
 
 ### `src/pages/PatientsPage.tsx`
-Searchable list of all patients. Search input is debounced (300 ms) and passed to `usePatients({ search })`. Rows are clickable and navigate to `PatientDetailPage`.
+Searchable list of all patients. Search input is debounced (300 ms) and passed to `usePatients({ search })`. Rows are clickable and navigate to `PatientDetailPage`. Table wrapped in `overflow-x-auto` for mobile horizontal scrolling.
 
 ### `src/pages/PatientDetailPage.tsx`
 Detail view for a single patient, using a tab layout:
@@ -258,11 +267,12 @@ Provides "New Appointment" shortcut button that navigates to `/appointments/new?
 Create / edit patient form (Zod schema with RHF). Detects edit mode via `:id` URL param. On edit, populates form via `form.reset()` once the patient data loads.
 
 ### `src/pages/AppointmentsPage.tsx`
-Paginated list of all appointments with four client-side or server-side filters:
+Paginated list of all appointments with four client-side or server-side filters. Filter bar uses `grid grid-cols-2` on mobile (stacks into 2-column grid). Table wrapped in `overflow-x-auto`. All `SelectTrigger` widths are `w-full md:w-[200px]` for responsive sizing.
 - **Status** — server-side (`status` param passed to the API)
 - **Modality** — client-side (backend ignores this param)
 - **Patient** — client-side, dropdown populated from unique patients in the loaded dataset
 - **Radiologist** — client-side, dropdown populated from unique radiologists in the loaded dataset
+
 
 Patient and radiologist names are resolved by issuing individual `useQueries` for each unique ID found in the appointments list. All four filters are combined in a `filteredAppointments` memo.
 
@@ -296,7 +306,7 @@ Full report viewer and editor. Features:
 Chronological imaging timeline for a patient (`:patientId` URL param). Each entry is a `Card` showing modality badge, study description, appointment status badge, date, and — if available — the report impression and finalized date.
 
 ### `src/pages/ScheduleManagementPage.tsx`
-Admin-only. Manages recurring radiologist schedule templates (not appointments). A form creates new templates (radiologist, day of week, start/end time, slot duration, optional modality). The table can be filtered by radiologist. Templates can be deleted with a confirmation dialog.
+Admin-only. Manages recurring radiologist schedule templates (not appointments). A form creates new templates (radiologist, day of week, start/end time, slot duration, optional modality). The table can be filtered by radiologist (filter stacks vertically on mobile). Table wrapped in `overflow-x-auto`. Templates can be deleted with a confirmation dialog.
 
 ### `src/pages/ForbiddenPage.tsx`
 Static 403 error page with a "Go to Dashboard" button. Rendered for role violations.
@@ -308,13 +318,13 @@ Static 403 error page with a "Go to Dashboard" button. Rendered for role violati
 ### Layout
 
 **`src/components/layout/AppShell.tsx`**
-Full-height layout wrapper: `<Sidebar />` on the left, `<TopBar />` across the top, `<Outlet />` (React Router) as the main scrollable content area.
+Full-height layout wrapper with responsive sidebar behaviour. Uses `useState` for `sidebarOpen` to manage a mobile drawer. On mobile (`< md`), the sidebar is a fixed slide-in drawer (hidden off-screen by default via `-translate-x-full`, slides in with `translate-x-0` on a 200 ms CSS transition). A semi-transparent overlay (`bg-black/50`) appears behind it and closes the sidebar on tap. On desktop (`md:`), the sidebar is `relative` and always visible. Main content area uses reduced padding on mobile (`p-3 md:p-6`). Passes `onNavigate` to Sidebar and `onMenuToggle` to TopBar.
 
 **`src/components/layout/Sidebar.tsx`**
-Left navigation. Renders nav items filtered by the current user's role (e.g., "Schedules" is admin-only, "Reports" is admin/radiologist). Active route highlighted. Uses `useLocation` for path matching.
+Left navigation. Renders nav items filtered by the current user's role (e.g., "Schedules" is admin-only, "Reports" is admin/radiologist). Active route highlighted. Uses `useLocation` for path matching. All nav labels are translated via `t('nav.*')`. Accepts an `onNavigate` prop called on every `<Link>` click — used to close the mobile drawer after navigation.
 
 **`src/components/layout/TopBar.tsx`**
-Top header bar. Displays the logged-in user's name and a colour-coded role badge. A dropdown menu exposes a logout action.
+Top header bar. Displays the logged-in user's name (hidden on `< sm` screens via `hidden sm:inline`) and a colour-coded role badge. Includes a hamburger `<Menu>` button (`md:hidden`) that calls `onMenuToggle` to open the mobile sidebar. A `LanguageSwitcher` component is rendered for switching between English and Spanish. A dropdown menu exposes a logout action. Responsive padding (`px-3 md:px-6`) and gaps (`gap-2 md:gap-4`).
 
 ### Shared
 
@@ -322,7 +332,7 @@ Top header bar. Displays the logged-in user's name and a colour-coded role badge
 Route wrapper that reads `user.role` from `authStore` and either renders children or redirects to `/403` (configurable via `redirectTo` prop).
 
 **`src/components/shared/StatusBadge.tsx`**
-Renders a coloured `Badge` for either `AppointmentStatus` or `ReportStatus`. Controlled by `type` prop. Colour map:
+Renders a coloured `Badge` for either `AppointmentStatus` or `ReportStatus`. Controlled by `type` prop. Status labels are translated via `t()` using a `STATUS_KEYS` lookup object. Colour map:
 - appointment: scheduled=blue, completed=green, canceled=gray, no_show=orange
 - report: draft=yellow, final=green, amended=purple
 
@@ -330,13 +340,13 @@ Renders a coloured `Badge` for either `AppointmentStatus` or `ReportStatus`. Con
 Renders a coloured `Badge` for a `Modality` value. Colour map: XR=cyan, CT=indigo, US=teal, MRI=violet, MAMMO=pink.
 
 **`src/components/shared/AuditTimestamp.tsx`**
-Displays a formatted "Created: ..." or "Updated: ..." timestamp. Shows UTC ISO string in the `title` tooltip.
+Displays a formatted "Created: ..." or "Updated: ..." timestamp (labels translated via `t('audit.*')`). Shows UTC ISO string in the `title` tooltip.
 
 **`src/components/shared/ConfirmDialog.tsx`**
-Generic modal confirmation dialog with configurable title, message, confirm/cancel labels, action callback, `destructive` variant, and loading state.
+Generic modal confirmation dialog with configurable title, message, confirm/cancel labels, action callback, `destructive` variant, and loading state. Cancel and processing labels are translated via `t('common.*')`.
 
 **`src/components/shared/ErrorAlert.tsx`**
-Renders a destructive `Alert` with an icon, optional title (default "Error"), and message string.
+Renders a destructive `Alert` with an icon, optional title (default translated via `t('common.error')`), and message string.
 
 **`src/components/shared/LoadingSpinner.tsx`**
 Centered spinner with optional text label. Three sizes: `sm`, `md` (default), `lg`.
@@ -372,7 +382,10 @@ Props:
 | `currentUserId` | `string` | The logged-in user's ID. |
 | `currentUserRole` | `UserRole` | Used together with `reportRadiologistId` to determine `canManageImages`. |
 
-Business rules: `canManageImages = isEditableStatus && (admin || (radiologist && owns the report))`. When the user cannot manage images, the upload zone is hidden. Uses `useReportImages`, `useUploadReportImage`, `useDeleteReportImage`, `useReportImageBlob` hooks internally. DICOM files show a file icon (no thumbnail). Raster image thumbnails are fetched via `useReportImageBlob`. Delete requires a `ConfirmDialog`.
+Business rules: `canManageImages = isEditableStatus && (admin || (radiologist && owns the report))`. When the user cannot manage images, the upload zone is hidden. Uses `useReportImages`, `useUploadReportImage`, `useDeleteReportImage`, `useReportImageBlob` hooks internally. DICOM files show a file icon (no thumbnail). Raster image thumbnails are fetched via `useReportImageBlob`. Delete requires a `ConfirmDialog`. All labels and error messages are translated via `t('images.*')`.
+
+**`src/components/shared/LanguageSwitcher.tsx`**
+Dropdown language picker using a Globe icon trigger (`lucide-react`). Lists supported languages (English, Español). Calls `i18n.changeLanguage(code)` on selection. Current language is highlighted in bold. Rendered in `TopBar` and on `LoginPage`.
 
 ### UI — `src/components/ui/`
 shadcn/ui primitives: `alert`, `badge`, `button`, `card`, `dialog`, `dropdown-menu`, `input`, `label`, `select`, `table`, `tabs`, `textarea`, `toast`, `toaster`. These are **not** to be modified directly; customise via Tailwind classes at the usage site.
@@ -382,9 +395,9 @@ shadcn/ui primitives: `alert`, `badge`, `button`, `card`, `dialog`, `dropdown-me
 ## Utilities — `src/utils/`
 
 ### `src/utils/statusTransitions.ts`
-Logic for appointment status state machine.
+Logic for appointment status state machine. Imports `i18next` directly (not a React hook) because this is a pure utility module.
 - `getAvailableStatusTransitions(current)` — returns valid next states. `scheduled` → `[completed, canceled, no_show]`; terminal states return `[]`.
-- `getStatusTransitionLabel(status)` — human-readable button labels ("Mark Completed", "Cancel", "Mark No Show").
+- `getStatusTransitionLabel(status)` — translated button labels via `i18next.t('appointments.markCompleted')`, etc.
 - `canTransitionStatus(status)` — boolean shorthand.
 
 ### `src/utils/roleGuard.ts`
@@ -413,6 +426,49 @@ Single export: `cn(...inputs)` — merges Tailwind class strings using `clsx` + 
 
 ---
 
+## Internationalization (i18n) — `src/i18n/`
+
+The entire UI supports English and Spanish via i18next.
+
+### `src/i18n/index.ts`
+Configures i18next with `LanguageDetector` (detection order: `localStorage` → `navigator`) and `react-i18next`. Fallback language: `'en'`. Supported languages: `['en', 'es']`. Translations are bundled statically (imported JSON, no lazy loading).
+
+### `src/i18n/en.json` / `src/i18n/es.json`
+~250+ translation keys each, organised into flat namespaces within a single `translation` namespace:
+- `common` — Save, Cancel, Edit, Delete, Loading, Error, etc.
+- `auth` — Login, Logout, email/password labels
+- `nav` — Sidebar navigation items (Dashboard, Patients, Appointments, Reports, Schedules)
+- `dashboard` — Dashboard title, welcome message, stat labels, action buttons
+- `patients` — Patient list/detail/form labels, search placeholder, table headers
+- `appointments` — Appointment list/detail/form labels, status labels, filter placeholders
+- `reports` — Report list/detail/form labels, status labels, finalize/amend actions
+- `schedule` — Schedule management labels, day-of-week names, form fields
+- `timeline` — Timeline page labels
+- `forbidden` — 403 error page text
+- `images` — Image upload/delete labels, error messages (unsupported type, too large)
+- `audit` — Created/Updated timestamp labels
+- `modalities` — Modality display names (X-Ray, CT Scan, etc.)
+- `editor` — Rich text editor toolbar labels
+- `language` — Language names (English, Español)
+
+**Usage pattern:** In React components, `const { t } = useTranslation()` then `t('namespace.key')`. In pure utility modules (e.g., `statusTransitions.ts`), import `i18next` directly and call `i18next.t()`.
+
+---
+
+## Deployment — `vercel.json`
+
+SPA rewrite configuration for Vercel:
+```json
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+All requests are routed to `/index.html` so React Router handles client-side routing. Without this, page refreshes on any route other than `/` would return a Vercel 404.
+
+---
+
 ## Key Patterns & Conventions
 
 1. **All data fetching goes through hooks** — pages never import from `src/api/` directly (the sole exception is `RichTextEditor`, which calls `reportsApi.uploadImage` and `reportsApi.getImageBlob` directly for immediate editor feedback).
@@ -421,7 +477,15 @@ Single export: `cn(...inputs)` — merges Tailwind class strings using `clsx` + 
 4. **Cache invalidation** — mutations invalidate the minimum necessary query keys. Appointment mutations also invalidate `['dashboard']`. Report mutations also invalidate `['timeline']`. Create/update appointment mutations additionally call `refetchQueries` to force an immediate re-fetch.
 5. **Available slots cache** — `staleTime: 0` + `gcTime: 0` so slot data is always fetched fresh from the backend.
 6. **Rich text fields** — findings and impression are stored as HTML. `RichTextEditor` handles authoring; `useResolvedHtml` handles authenticated image display in read-only views; `restoreApiImageSrcs` is called before `PUT /reports/:id` to convert blob URLs back to stable API paths.
-7. **Backend quirks to be aware of:**
+7. **Internationalization** — every user-visible string in every page, layout component, and shared component is rendered through `t()` translation calls. The `LanguageSwitcher` component (Globe icon dropdown in the top bar) allows runtime language switching without page reload. Language preference is persisted to `localStorage`.
+8. **Mobile responsiveness** — the app is fully responsive down to ~320 px viewport width:
+   - **Sidebar** — hidden off-screen on mobile, slides in as a fixed drawer with overlay backdrop when toggled via the hamburger menu button in the top bar.
+   - **Page headers** — use `flex-col sm:flex-row` for stacking on small screens; titles use `text-2xl sm:text-3xl`.
+   - **Tables** — all data tables are wrapped in `overflow-x-auto` containers for horizontal scrolling on narrow viewports.
+   - **Filter bars** — use `grid grid-cols-2` on mobile; select widths are `w-full md:w-[200px]`.
+   - **Dashboard grid** — `grid-cols-2 lg:grid-cols-4` for stat cards.
+   - **Content padding** — `p-3 md:p-6` throughout.
+9. **Backend quirks to be aware of:**
    - `GET /appointments` ignores `modality` query param → filter client-side.
    - `GET /schedule/available-slots` already returns only free slots — no client-side availability filtering needed.
    - `AvailableSlot.slot_duration_minutes` is present in the TypeScript type but the backend does not return it — compute from `end - start` if needed.
