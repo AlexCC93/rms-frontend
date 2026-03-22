@@ -103,7 +103,7 @@ export function ReportDetailPage() {
       await finalizeReport.mutateAsync(id)
       toast({
         title: t('reports.reportFinalized'),
-        description: t('reports.reportFinalizedDesc'),
+        description: t('reports.finalizedAndEmailSent'),
       })
       setConfirmFinalizeOpen(false)
     } catch (err) {
@@ -204,12 +204,22 @@ export function ReportDetailPage() {
       {report.status === 'amended' && (
         <div className="flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-4">
           <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 shrink-0" />
-          <div>
+          <div className="flex-1">
             <p className="font-medium text-yellow-800">{t('reports.superseded')}</p>
             <p className="text-sm text-yellow-700 mt-1">
               {t('reports.supersededDesc')}
             </p>
           </div>
+          {report.amended_by_report_id && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={() => navigate(`/reports/${report.amended_by_report_id}`)}
+            >
+              {t('reports.viewAmendment')}
+            </Button>
+          )}
         </div>
       )}
 

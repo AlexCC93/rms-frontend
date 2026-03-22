@@ -212,7 +212,9 @@
     "noResults": "No se encontraron informes",
     "reportsCreatedFromAppointments": "Los informes se crean a partir de citas completadas",
     "filterByStatus": "Filtrar por estado",
+    "filterByPatient": "Filtrar por paciente",
     "allStatuses": "Todos los Estados",
+    "allPatients": "Todos los Pacientes",
     "draft": "Borrador",
     "final": "Final",
     "amended": "Enmendado",
@@ -262,6 +264,7 @@
     "confirmAmendmentMsg": "Esto marcará el informe finalizado actual como enmendado y creará un nuevo borrador para correcciones. El informe original se conserva permanentemente para fines de auditoría. ¿Desea continuar?",
     "superseded": "Este informe ha sido reemplazado",
     "supersededDesc": "Se emitió una enmienda para este informe. El contenido a continuación es la versión original firmada y se conserva para fines de auditoría.",
+    "viewAmendment": "Ver Enmienda",
     "amendmentVersion": "Enmienda — Versión {{version}}",
     "amendmentDesc": "Este informe es una enmienda de una versión anterior.",
     "newReport": "Nuevo Informe",
@@ -280,7 +283,8 @@
     "noAppointment": "No se especificó una cita. Por favor navegue aquí desde una cita.",
     "appointmentNotFound": "Cita no encontrada.",
     "onlyAssignedRadiologist": "Solo el radiólogo asignado a esta cita puede crear el informe.",
-    "noReportAvailable": "No hay informe disponible para esta cita."
+    "noReportAvailable": "No hay informe disponible para esta cita.",
+    "finalizedAndEmailSent": "Informe finalizado. Se ha enviado una copia en PDF al correo electrónico del paciente."
   },
   "schedule": {
     "title": "Gestión de Horarios",

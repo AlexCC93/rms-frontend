@@ -59,7 +59,7 @@ Single source of truth for all TypeScript interfaces and union types.
 - `ReportStatus` — `'draft' | 'final' | 'amended'`
 - `UserRole` — `'admin' | 'radiologist' | 'staff'`
 
-**Entity interfaces:** `User`, `Patient`, `Appointment`, `RadiologistSchedule`, `AvailableSlot`, `AvailableSlotsResponse`, `RadiologyReport`, `ReportImage`, `ReportImageListResponse`, `TimelineEntry`, `DashboardStats`
+**Entity interfaces:** `User`, `Patient`, `Appointment`, `RadiologistSchedule`, `AvailableSlot`, `AvailableSlotsResponse`, `RadiologyReport` (includes `parent_report_id?` and `amended_by_report_id?` for bidirectional amendment linking), `ReportImage`, `ReportImageListResponse`, `TimelineEntry`, `DashboardStats`
 
 **CRUD payload types:** `PatientCreate`, `PatientUpdate`, `AppointmentCreate`, `AppointmentUpdate`, `AppointmentStatusUpdate`, `RadiologyReportCreate`, `RadiologyReportUpdate`, `RadiologistScheduleCreate`
 
@@ -287,7 +287,7 @@ On 409 (slot taken), clears the selected slot and refetches. Supports pre-fillin
 Read-only detail view for one appointment. Resolves patient, referring physician, and assigned radiologist names via individual queries. Shows linked radiology reports. Provides status transition buttons (only available transitions per `statusTransitions` util are shown); transitions require a confirmation dialog. Radiologists who receive a 403 are silently redirected back to the list.
 
 ### `src/pages/ReportsPage.tsx`
-List of radiology reports, filterable by status. Each row is rendered by a `ReportRow` sub-component that independently fetches and resolves appointment → patient and radiologist names. Draft reports are highlighted with a yellow background.
+List of radiology reports with two client-side filters (status and patient). Fetches all reports with `limit: 1000`, then resolves unique appointment IDs via `useQueries` to build an appointment map, and from those extracts unique patient IDs for a second batch of `useQueries`. Both lookup maps are memoised. The **status filter** dropdown filters by `report.status` client-side. The **patient filter** dropdown is populated with patients that appear in the loaded reports and filters via the `report → appointment → patient_id` chain. Each row is rendered by a `ReportRow` sub-component that independently fetches and resolves appointment → patient and radiologist names. Draft reports are highlighted with a yellow background. Filter bar uses `grid grid-cols-2` on mobile.
 
 ### `src/pages/ReportFormPage.tsx`
 Create a new radiology report. Requires `?appointment_id=` query param. Displays appointment context (patient, modality, date) above the findings/impression rich-text editors (`RichTextEditor`). Auto-assigns `radiologist_id` to the currently logged-in user.
@@ -299,6 +299,7 @@ Full report viewer and editor. Features:
 - Radiologist re-assignment dropdown (admin/radiologist only)
 - Finalize (`PATCH .../finalize`) with confirmation dialog
 - Amend — creates a new `draft` report linked via `parent_report_id`
+- Superseded banner — when a report has `status === 'amended'`, a yellow warning banner is shown. If `amended_by_report_id` is set, a "View Amendment" button navigates to the child report that superseded it.
 - Version history badge and parent report reference
 - Read-only view uses `useResolvedHtml` to display embedded images fetched with auth as `blob:` URLs
 
