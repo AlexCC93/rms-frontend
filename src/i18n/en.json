@@ -212,7 +212,9 @@
     "noResults": "No reports found",
     "reportsCreatedFromAppointments": "Reports are created from completed appointments",
     "filterByStatus": "Filter by status",
+    "filterByPatient": "Filter by patient",
     "allStatuses": "All Statuses",
+    "allPatients": "All Patients",
     "draft": "Draft",
     "final": "Final",
     "amended": "Amended",
@@ -262,6 +264,7 @@
     "confirmAmendmentMsg": "This will mark the current finalized report as amended and create a new draft for corrections. The original report is permanently preserved for audit purposes. Do you want to proceed?",
     "superseded": "This report has been superseded",
     "supersededDesc": "An amendment was issued for this report. The content below is the original signed version and is preserved for audit purposes.",
+    "viewAmendment": "View Amendment",
     "amendmentVersion": "Amendment — Version {{version}}",
     "amendmentDesc": "This report is an amendment of a previous version.",
     "newReport": "New Report",
@@ -280,7 +283,8 @@
     "noAppointment": "No appointment specified. Please navigate here from an appointment.",
     "appointmentNotFound": "Appointment not found.",
     "onlyAssignedRadiologist": "Only the radiologist assigned to this appointment can create the report.",
-    "noReportAvailable": "No report available for this appointment."
+    "noReportAvailable": "No report available for this appointment.",
+    "finalizedAndEmailSent": "Report finalized. A PDF copy has been sent to the patient's email."
   },
   "schedule": {
     "title": "Schedule Management",

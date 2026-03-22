@@ -158,6 +158,7 @@ export interface RadiologyReport {
   status: ReportStatus
   version: number
   parent_report_id?: string
+  amended_by_report_id?: string
   finalized_at?: string
   is_deleted: boolean
   created_at: string
