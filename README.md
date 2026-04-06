@@ -55,9 +55,19 @@ A modern, clinical-grade web application for managing radiology operations, buil
 - **Audit Trail**: All entities show creation and update timestamps
 - **High Contrast**: Clean, clinical aesthetic optimized for medical environments
 
+
 ## Prerequisites
 
-- Node.js 18+ and npm
+- **Node.js 18+ and npm**
+	- If you do not have Node.js and npm installed:
+		1. Download the LTS version from [https://nodejs.org/](https://nodejs.org/).
+		2. Run the installer and follow the prompts. This will install both Node.js and npm.
+		3. After installation, open a new terminal and verify installation with:
+			 ```
+			 node -v
+			 npm -v
+			 ```
+		4. You should see version numbers for both.
 - Backend API server running (default: http://localhost:8000)
 
 ## Environment Variables
@@ -76,10 +86,13 @@ git clone <repository-url>
 cd rms-frontend
 ```
 
+
 2. Install dependencies:
-```bash
-npm install
-```
+	> **Note:** Ensure that `npm` is available in your terminal before running the following command. If you see an error like `'npm' is not recognized`, follow the prerequisites above to install Node.js and npm.
+   
+	```bash
+	npm install
+	```
 
 3. Copy the example environment file:
 ```bash
