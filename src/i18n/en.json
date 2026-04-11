@@ -284,7 +284,8 @@
     "appointmentNotFound": "Appointment not found.",
     "onlyAssignedRadiologist": "Only the radiologist assigned to this appointment can create the report.",
     "noReportAvailable": "No report available for this appointment.",
-    "finalizedAndEmailSent": "Report finalized. A PDF copy has been sent to the patient's email."
+    "finalizedAndEmailSent": "Report finalized. A PDF copy has been sent to the patient's email.",
+    "emailNotificationFailed": "Report finalized, but the email could not be delivered."
   },
   "schedule": {
     "title": "Schedule Management",

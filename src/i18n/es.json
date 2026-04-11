@@ -284,7 +284,8 @@
     "appointmentNotFound": "Cita no encontrada.",
     "onlyAssignedRadiologist": "Solo el radiólogo asignado a esta cita puede crear el informe.",
     "noReportAvailable": "No hay informe disponible para esta cita.",
-    "finalizedAndEmailSent": "Informe finalizado. Se ha enviado una copia en PDF al correo electrónico del paciente."
+    "finalizedAndEmailSent": "Informe finalizado. Se ha enviado una copia en PDF al correo electrónico del paciente.",
+    "emailNotificationFailed": "Informe finalizado, pero no se pudo entregar el correo electrónico."
   },
   "schedule": {
     "title": "Gestión de Horarios",

@@ -100,11 +100,19 @@ export function ReportDetailPage() {
     if (!id) return
 
     try {
-      await finalizeReport.mutateAsync(id)
-      toast({
-        title: t('reports.reportFinalized'),
-        description: t('reports.finalizedAndEmailSent'),
-      })
+      const result = await finalizeReport.mutateAsync(id)
+      if (result.email_notification_sent === false) {
+        toast({
+          variant: 'destructive',
+          title: t('reports.reportFinalized'),
+          description: t('reports.emailNotificationFailed'),
+        })
+      } else {
+        toast({
+          title: t('reports.reportFinalized'),
+          description: t('reports.finalizedAndEmailSent'),
+        })
+      }
       setConfirmFinalizeOpen(false)
     } catch (err) {
       toast({

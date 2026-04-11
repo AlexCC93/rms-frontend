@@ -160,6 +160,7 @@ export interface RadiologyReport {
   parent_report_id?: string
   amended_by_report_id?: string
   finalized_at?: string
+  email_notification_sent?: boolean
   is_deleted: boolean
   created_at: string
   updated_at: string
