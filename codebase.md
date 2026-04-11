@@ -59,7 +59,7 @@ Single source of truth for all TypeScript interfaces and union types.
 - `ReportStatus` — `'draft' | 'final' | 'amended'`
 - `UserRole` — `'admin' | 'radiologist' | 'staff'`
 
-**Entity interfaces:** `User`, `Patient`, `Appointment`, `RadiologistSchedule`, `AvailableSlot`, `AvailableSlotsResponse`, `RadiologyReport` (includes `parent_report_id?` and `amended_by_report_id?` for bidirectional amendment linking), `ReportImage`, `ReportImageListResponse`, `TimelineEntry`, `DashboardStats`
+**Entity interfaces:** `User`, `Patient`, `Appointment`, `RadiologistSchedule`, `AvailableSlot`, `AvailableSlotsResponse`, `RadiologyReport` (includes `parent_report_id?` and `amended_by_report_id?` for bidirectional amendment linking, and `email_notification_sent?: boolean` populated only on the finalize response), `ReportImage`, `ReportImageListResponse`, `TimelineEntry`, `DashboardStats`
 
 **CRUD payload types:** `PatientCreate`, `PatientUpdate`, `AppointmentCreate`, `AppointmentUpdate`, `AppointmentStatusUpdate`, `RadiologyReportCreate`, `RadiologyReportUpdate`, `RadiologistScheduleCreate`
 
@@ -140,7 +140,7 @@ CRUD + finalize + image management for `/api/v1/reports`.
 - `getReport(id)`
 - `createReport(data)`
 - `updateReport(id, data)`
-- `finalizeReport(id)` — `PATCH /api/v1/reports/:id/finalize`
+- `finalizeReport(id)` — `PATCH /api/v1/reports/:id/finalize`; response includes `email_notification_sent` (`true`/`false`/`null`)
 - `deleteReport(id)`
 
 **Report image methods** (all under `/api/v1/reports/:reportId/images`):
@@ -297,7 +297,7 @@ Full report viewer and editor. Features:
 - Inline edit mode — findings and impression use `RichTextEditor` (with `reportId` prop so images are uploaded immediately to the backend)
 - Report images panel via `ReportImageManager`
 - Radiologist re-assignment dropdown (admin/radiologist only)
-- Finalize (`PATCH .../finalize`) with confirmation dialog
+- Finalize (`PATCH .../finalize`) with confirmation dialog; on success, checks `email_notification_sent` — if `false`, shows a destructive warning toast indicating the email could not be delivered
 - Amend — creates a new `draft` report linked via `parent_report_id`
 - Superseded banner — when a report has `status === 'amended'`, a yellow warning banner is shown. If `amended_by_report_id` is set, a "View Amendment" button navigates to the child report that superseded it.
 - Version history badge and parent report reference
