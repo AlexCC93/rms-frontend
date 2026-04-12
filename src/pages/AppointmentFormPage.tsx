@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -18,7 +18,7 @@ import { getErrorMessage } from '@/api/client'
 import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft, Clock, User, X, RefreshCw, CalendarCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Modality, AvailableSlot } from '@/types'
+import type { Modality, AvailableSlot, Patient } from '@/types'
 import { useTranslation } from 'react-i18next'
 
 const appointmentSchema = z.object({
@@ -37,9 +37,16 @@ type AppointmentFormData = z.infer<typeof appointmentSchema>
 export function AppointmentFormPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
+  const location = useLocation()
   const { toast } = useToast()
   const { t } = useTranslation()
   const isEditing = id !== undefined
+
+  // Support both ?patient_id= and ?patientId= query params
+  const prefilledPatientId = searchParams.get('patientId') || searchParams.get('patient_id') || undefined
+  // Patient data passed via router state (avoids 403 when radiologist can't fetch the patient)
+  const statePatient = (location.state as { patient?: Patient } | null)?.patient ?? undefined
 
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null)
@@ -48,6 +55,9 @@ export function AppointmentFormPage() {
   const { data: appointment, isLoading: isLoadingAppointment } = useAppointment(isEditing ? id : undefined)
   const { data: patients, isLoading: isLoadingPatients } = usePatients({ limit: 1000 })
   const { data: currentPatient } = usePatient(appointment?.patient_id)
+  // Only fetch if we have a prefilledPatientId but no state patient (e.g. navigated via PatientDetailPage)
+  const { data: fetchedPrefilledPatient } = usePatient(!isEditing && !statePatient ? prefilledPatientId : undefined)
+  const prefilledPatient = statePatient ?? fetchedPrefilledPatient
   const { data: physicians, isLoading: isLoadingPhysicians } = usePhysicians()
 
   const slotsParams = useMemo(() => {
@@ -68,7 +78,7 @@ export function AppointmentFormPage() {
   const form = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: {
-      patient_id: '',
+      patient_id: prefilledPatientId || '',
       referring_physician: '',
       modality: 'XR' as Modality,
       study_description: '',
@@ -96,6 +106,15 @@ export function AppointmentFormPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing, appointment])
+
+  // Merge prefilled patient into the patient list for the dropdown
+  const patientOptions = useMemo(() => {
+    const list = patients ?? []
+    if (prefilledPatient && !list.some((p) => p.id === prefilledPatient.id)) {
+      return [prefilledPatient, ...list]
+    }
+    return list
+  }, [patients, prefilledPatient])
 
   const watchedModality = form.watch('modality')
   useEffect(() => {
@@ -199,9 +218,12 @@ export function AppointmentFormPage() {
               {/* Patient */}
               <div className="space-y-2">
                 <Label>{t('appointments.patient')} *</Label>
-                {isEditing && currentPatient ? (
+                {(isEditing && currentPatient) || prefilledPatientId ? (
                   <Input
-                    value={`${currentPatient.last_name}, ${currentPatient.first_name} — ${currentPatient.national_id}`}
+                    value={(() => {
+                      const p = isEditing ? currentPatient : prefilledPatient
+                      return p ? `${p.last_name}, ${p.first_name} — ${p.national_id}` : t('common.loading')
+                    })()}
                     disabled
                     className="bg-muted"
                   />
@@ -214,7 +236,7 @@ export function AppointmentFormPage() {
                       <SelectValue placeholder={t('appointments.selectPatient')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {patients?.map((p) => (
+                      {patientOptions.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
                           {p.last_name}, {p.first_name} — {p.national_id}
                         </SelectItem>

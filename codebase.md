@@ -266,6 +266,8 @@ Provides "New Appointment" shortcut button that navigates to `/appointments/new?
 ### `src/pages/PatientFormPage.tsx`
 Create / edit patient form (Zod schema with RHF). Detects edit mode via `:id` URL param. On edit, populates form via `form.reset()` once the patient data loads.
 
+**Post-creation appointment prompt (create mode only):** After a successful `POST /patients`, instead of navigating to the patient detail page, a `ConfirmDialog` modal appears asking whether to schedule an appointment for the newly created patient. "Yes, schedule appointment" navigates to `/appointments/new?patientId=<uuid>` with the full `Patient` object passed via React Router state (avoids a `GET /patients/:id` call that would 403 for radiologists due to HIPAA scoping). "No, go to patients" navigates to `/patients`. Edit mode post-save behavior is unchanged.
+
 ### `src/pages/AppointmentsPage.tsx`
 Paginated list of all appointments with four client-side or server-side filters. Filter bar uses `grid grid-cols-2` on mobile (stacks into 2-column grid). Table wrapped in `overflow-x-auto`. All `SelectTrigger` widths are `w-full md:w-[200px]` for responsive sizing.
 - **Status** — server-side (`status` param passed to the API)
@@ -278,10 +280,14 @@ Patient and radiologist names are resolved by issuing individual `useQueries` fo
 
 ### `src/pages/AppointmentFormPage.tsx`
 Create / edit appointment form. Two-section layout:
-1. **Patient & Clinical Info** — patient (locked to display in edit mode), modality, study description, referring physician (optional, `Controller`-based `Select` for reliable value binding), clinical indication
+1. **Patient & Clinical Info** — patient (locked to display in edit mode or when pre-filled via query param), modality, study description, referring physician (optional, `Controller`-based `Select` for reliable value binding), clinical indication
 2. **Radiologist & Time Slot** — date picker triggers a fresh call to `/api/v1/schedule/available-slots?date=...&modality=...`. Available slots are rendered as clickable cards. `modalityForSlots` initialises to `'XR'` (matches form default) so the first date pick always produces exactly one query.
 
-On 409 (slot taken), clears the selected slot and refetches. Supports pre-filling `patient_id` from the URL query string (`?patient_id=...`).
+On 409 (slot taken), clears the selected slot and refetches. Supports pre-filling the patient via URL query string — accepts both `?patient_id=<uuid>` (used by `PatientDetailPage`) and `?patientId=<uuid>` (used by `PatientFormPage` post-creation flow). When a `patientId` is present:
+- The patient field is locked (read-only disabled input showing the patient name), same as edit mode.
+- Patient data is read from React Router's `location.state.patient` if available (passed by `PatientFormPage`), falling back to a `usePatient(id)` fetch for the `PatientDetailPage` flow.
+- The patient is merged into the dropdown options via a `patientOptions` memo, so it appears even if the radiologist's normal scoped patient list doesn't include them.
+- `patient_id` is set in the form's `defaultValues` from the query param.
 
 ### `src/pages/AppointmentDetailPage.tsx`
 Read-only detail view for one appointment. Resolves patient, referring physician, and assigned radiologist names via individual queries. Shows linked radiology reports. Provides status transition buttons (only available transitions per `statusTransitions` util are shown); transitions require a confirmation dialog. Radiologists who receive a 403 are silently redirected back to the list.
@@ -440,7 +446,7 @@ Configures i18next with `LanguageDetector` (detection order: `localStorage` → 
 - `auth` — Login, Logout, email/password labels
 - `nav` — Sidebar navigation items (Dashboard, Patients, Appointments, Reports, Schedules)
 - `dashboard` — Dashboard title, welcome message, stat labels, action buttons
-- `patients` — Patient list/detail/form labels, search placeholder, table headers
+- `patients` — Patient list/detail/form labels, search placeholder, table headers, post-creation appointment prompt
 - `appointments` — Appointment list/detail/form labels, status labels, filter placeholders
 - `reports` — Report list/detail/form labels, status labels, finalize/amend actions
 - `schedule` — Schedule management labels, day-of-week names, form fields
