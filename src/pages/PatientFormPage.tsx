@@ -2,8 +2,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useCreatePatient, useUpdatePatient, usePatient } from '@/hooks/usePatients'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getErrorMessage } from '@/api/client'
 import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft } from 'lucide-react'
-import type { Sex } from '@/types'
+import type { Sex, Patient } from '@/types'
 import { useTranslation } from 'react-i18next'
 
 const patientSchema = z.object({
@@ -40,6 +41,9 @@ export function PatientFormPage() {
 
   const createPatient = useCreatePatient()
   const updatePatient = useUpdatePatient()
+
+  const [createdPatient, setCreatedPatient] = useState<Patient | null>(null)
+  const [showSchedulePrompt, setShowSchedulePrompt] = useState(false)
 
   const form = useForm<PatientFormData>({
     resolver: zodResolver(patientSchema),
@@ -99,7 +103,8 @@ export function PatientFormPage() {
           title: t('patients.patientCreated'),
           description: t('patients.patientCreatedDesc'),
         })
-        navigate(`/patients/${newPatient.id}`)
+        setCreatedPatient(newPatient)
+        setShowSchedulePrompt(true)
         return
       }
       navigate(`/patients/${id}`)
@@ -289,6 +294,20 @@ export function PatientFormPage() {
           </form>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={showSchedulePrompt}
+        onOpenChange={(open) => {
+          if (!open) {
+            navigate('/patients')
+          }
+        }}
+        title={t('patients.createdSuccessTitle')}
+        message={t('patients.scheduleAppointmentPrompt')}
+        confirmLabel={t('patients.yesSchedule')}
+        cancelLabel={t('patients.noGoToPatients')}
+        onConfirm={() => navigate(`/appointments/new?patientId=${createdPatient?.id}`, { state: { patient: createdPatient } })}
+      />
     </div>
   )
 }

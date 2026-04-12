@@ -128,7 +128,11 @@
     "createPatient": "Crear Paciente",
     "updateInfo": "Actualizar información demográfica y de contacto del paciente",
     "enterInfo": "Ingrese información demográfica y de contacto del paciente",
-    "patientNotFound": "Paciente no encontrado"
+    "patientNotFound": "Paciente no encontrado",
+    "createdSuccessTitle": "Paciente Creado Exitosamente",
+    "scheduleAppointmentPrompt": "¿Desea agendar una cita para este paciente?",
+    "yesSchedule": "Sí, agendar cita",
+    "noGoToPatients": "No, ir a pacientes"
   },
   "appointments": {
     "title": "Citas",
