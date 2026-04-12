@@ -289,7 +289,12 @@
     "onlyAssignedRadiologist": "Solo el radiólogo asignado a esta cita puede crear el informe.",
     "noReportAvailable": "No hay informe disponible para esta cita.",
     "finalizedAndEmailSent": "Informe finalizado. Se ha enviado una copia en PDF al correo electrónico del paciente.",
-    "emailNotificationFailed": "Informe finalizado, pero no se pudo entregar el correo electrónico."
+    "emailNotificationFailed": "Informe finalizado, pero no se pudo entregar el correo electrónico.",
+    "notificationSent": "Se ha enviado un enlace seguro de descarga al correo del paciente.",
+    "notificationSkipped": "Informe finalizado. No se pudo enviar la notificación por correo.",
+    "resendNotification": "Reenviar Notificación",
+    "resendSuccess": "Enlace de notificación reenviado exitosamente.",
+    "resendFailed": "Error al reenviar la notificación."
   },
   "schedule": {
     "title": "Gestión de Horarios",

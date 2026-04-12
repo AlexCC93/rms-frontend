@@ -289,7 +289,12 @@
     "onlyAssignedRadiologist": "Only the radiologist assigned to this appointment can create the report.",
     "noReportAvailable": "No report available for this appointment.",
     "finalizedAndEmailSent": "Report finalized. A PDF copy has been sent to the patient's email.",
-    "emailNotificationFailed": "Report finalized, but the email could not be delivered."
+    "emailNotificationFailed": "Report finalized, but the email could not be delivered.",
+    "notificationSent": "A secure download link has been emailed to the patient.",
+    "notificationSkipped": "Report finalized. Email notification could not be sent.",
+    "resendNotification": "Resend Notification",
+    "resendSuccess": "Notification link resent successfully.",
+    "resendFailed": "Failed to resend notification."
   },
   "schedule": {
     "title": "Schedule Management",
