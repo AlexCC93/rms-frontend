@@ -128,7 +128,11 @@
     "createPatient": "Create Patient",
     "updateInfo": "Update patient demographic and contact information",
     "enterInfo": "Enter patient demographic and contact information",
-    "patientNotFound": "Patient not found"
+    "patientNotFound": "Patient not found",
+    "createdSuccessTitle": "Patient Created Successfully",
+    "scheduleAppointmentPrompt": "Would you like to schedule an appointment for this patient?",
+    "yesSchedule": "Yes, schedule appointment",
+    "noGoToPatients": "No, go to patients"
   },
   "appointments": {
     "title": "Appointments",

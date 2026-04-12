@@ -26,9 +26,13 @@ RMS-lite supports three user roles, each with tailored access to the features th
 
 Register and maintain patient records including demographics, contact information, and clinical notes. Patients can be searched instantly with a live search bar. Each patient has a dedicated profile page showing their full appointment history and imaging timeline. Records can be soft-deleted when no longer active, preserving data integrity for audit purposes.
 
+After creating a new patient, the system prompts the user with the option to immediately schedule an appointment for that patient. This streamlines the common workflow where a radiologist registers a patient and needs to book their first imaging study — all without leaving the current flow or requiring an administrator to intervene.
+
 ### Appointment Scheduling
 
 Schedule radiology appointments across five imaging modalities: X-Ray, CT, US, MRI, and Mammography. The system integrates with radiologist availability schedules — when creating an appointment, it shows only the time slots that are actually free, preventing double-bookings. Appointments follow a clear status lifecycle: once scheduled, they can be marked as completed, canceled, or no-show.
+
+When navigating to the appointment form from the post-patient-creation prompt or from a patient's detail page, the patient is automatically pre-selected and locked, so the user can proceed directly to choosing a modality and time slot.
 
 ### Radiologist Schedule Management
 
