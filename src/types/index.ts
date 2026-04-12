@@ -240,6 +240,12 @@ export interface RefreshResponse {
   token_type: string
 }
 
+// Resend Notification
+export interface ResendNotificationResponse {
+  notification_sent: boolean
+  detail: string
+}
+
 // API Error Response (RFC 7807)
 export interface ApiError {
   type?: string
