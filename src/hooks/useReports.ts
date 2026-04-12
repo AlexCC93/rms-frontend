@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { reportsApi } from '@/api/reports'
+import { getErrorMessage } from '@/api/client'
 import type { ReportFilters, RadiologyReportCreate, RadiologyReportUpdate } from '@/types'
+import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next'
 
 export const useReports = (filters?: ReportFilters) => {
   return useQuery({
@@ -67,6 +70,33 @@ export const useDeleteReport = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    },
+  })
+}
+
+export function useResendNotification() {
+  const { toast } = useToast()
+  const { t } = useTranslation()
+
+  return useMutation({
+    mutationFn: (reportId: string) => reportsApi.resendNotification(reportId),
+    onSuccess: (data) => {
+      if (data.notification_sent) {
+        toast({ title: t('reports.resendSuccess') })
+      } else {
+        toast({
+          title: t('reports.resendFailed'),
+          description: data.detail,
+          variant: 'destructive',
+        })
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: t('common.error'),
+        description: getErrorMessage(error),
+        variant: 'destructive',
+      })
     },
   })
 }

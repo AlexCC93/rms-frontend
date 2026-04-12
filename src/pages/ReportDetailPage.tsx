@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { useReport, useUpdateReport, useFinalizeReport, useCreateReport } from '@/hooks/useReports'
+import { useReport, useUpdateReport, useFinalizeReport, useCreateReport, useResendNotification } from '@/hooks/useReports'
 import { useAppointment } from '@/hooks/useAppointments'
 import { usePatient } from '@/hooks/usePatients'
 import { usePhysician } from '@/hooks/usePhysicians'
@@ -12,14 +12,14 @@ import { Label } from '@/components/ui/label'
 import { RichTextEditor } from '@/components/shared/RichTextEditor'
 import { getErrorMessage } from '@/api/client'
 import { format } from 'date-fns'
-import { ArrowLeft, Save, CheckCircle2, Edit, FileText, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Save, CheckCircle2, Edit, FileText, AlertTriangle, RefreshCw } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ModalityBadge } from '@/components/shared/ModalityBadge'
 import { AuditTimestamp } from '@/components/shared/AuditTimestamp'
 import { useToast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { useAuthStore } from '@/stores/authStore'
-import { canEditReport } from '@/utils/roleGuard'
+import { canEditReport, canFinalizeReport } from '@/utils/roleGuard'
 import { useUser } from '@/hooks/useUsers'
 import { useResolvedHtml } from '@/hooks/useResolvedHtml'
 import { resolveApiImageSrcs, restoreApiImageSrcs } from '@/utils/resolveReportImages'
@@ -50,6 +50,7 @@ export function ReportDetailPage() {
   const updateReport = useUpdateReport()
   const finalizeReport = useFinalizeReport()
   const createReport = useCreateReport()
+  const { mutate: resendNotification, isPending: isResending } = useResendNotification()
 
   // Resolved HTML for read-only view — swaps /api/v1/... src → blob: URL
   const resolvedFindingsView = useResolvedHtml(report?.findings)
@@ -101,16 +102,15 @@ export function ReportDetailPage() {
 
     try {
       const result = await finalizeReport.mutateAsync(id)
-      if (result.email_notification_sent === false) {
+      if (result.email_notification_sent === true) {
         toast({
-          variant: 'destructive',
           title: t('reports.reportFinalized'),
-          description: t('reports.emailNotificationFailed'),
+          description: t('reports.notificationSent'),
         })
-      } else {
+      } else if (result.email_notification_sent === false) {
         toast({
           title: t('reports.reportFinalized'),
-          description: t('reports.finalizedAndEmailSent'),
+          description: t('reports.notificationSkipped'),
         })
       }
       setConfirmFinalizeOpen(false)
@@ -204,6 +204,17 @@ export function ReportDetailPage() {
             <Button variant="outline" onClick={() => setConfirmAmendmentOpen(true)}>
               <FileText className="mr-2 h-4 w-4" />
               {t('reports.createAmendment')}
+            </Button>
+          )}
+          {report.status === 'final' && canFinalizeReport(user?.role) && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isResending}
+              onClick={() => resendNotification(report.id)}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${isResending ? 'animate-spin' : ''}`} />
+              {isResending ? t('common.loading') : t('reports.resendNotification')}
             </Button>
           )}
         </div>

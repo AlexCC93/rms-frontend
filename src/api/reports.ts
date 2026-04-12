@@ -5,6 +5,7 @@ import type {
   RadiologyReportUpdate,
   ReportFilters,
   ReportImage,
+  ResendNotificationResponse,
 } from '@/types'
 
 export const reportsApi = {
@@ -34,6 +35,13 @@ export const reportsApi = {
   finalizeReport: async (id: string): Promise<RadiologyReport> => {
     const response = await apiClient.patch<RadiologyReport>(`/api/v1/reports/${id}/finalize`)
     return response.data
+  },
+
+  resendNotification: async (reportId: string): Promise<ResendNotificationResponse> => {
+    const { data } = await apiClient.post<ResendNotificationResponse>(
+      `/api/v1/reports/${reportId}/resend-notification`,
+    )
+    return data
   },
 
   deleteReport: async (id: string): Promise<void> => {
