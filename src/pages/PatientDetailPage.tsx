@@ -33,7 +33,7 @@ function ResendVerificationButton({ patientId }: { patientId: string }) {
 
   return (
     <Button
-      size="xs"
+      size="sm"
       variant="outline"
       disabled={sendVerification.isPending}
       onClick={async () => {
