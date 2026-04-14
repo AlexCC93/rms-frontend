@@ -51,3 +51,15 @@ export const useDeletePatient = () => {
     },
   })
 }
+
+export const useSendVerificationEmail = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => patientsApi.sendVerificationEmail(id),
+    onSuccess: (_: any, id: string) => {
+      queryClient.invalidateQueries({ queryKey: ['patients', id] })
+    },
+  })
+}
+

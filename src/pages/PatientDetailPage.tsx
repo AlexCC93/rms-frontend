@@ -1,4 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
+import { useSendVerificationEmail } from '@/hooks/usePatients'
+import { useToast } from '@/hooks/use-toast'
 import { usePatient } from '@/hooks/usePatients'
 import { useAppointments } from '@/hooks/useAppointments'
 import { useTimeline } from '@/hooks/useTimeline'
@@ -23,6 +25,30 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+
+function ResendVerificationButton({ patientId }: { patientId: string }) {
+  const { t } = useTranslation()
+  const { toast } = useToast()
+  const sendVerification = useSendVerificationEmail()
+
+  return (
+    <Button
+      size="xs"
+      variant="outline"
+      disabled={sendVerification.isPending}
+      onClick={async () => {
+        try {
+          await sendVerification.mutateAsync(patientId)
+          toast({ title: t('patients.verificationSent') })
+        } catch {
+          toast({ title: t('patients.verificationFailed'), variant: 'destructive' })
+        }
+      }}
+    >
+      {sendVerification.isPending ? t('common.loading') : t('patients.resendVerification')}
+    </Button>
+  )
+}
 
 export function PatientDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -107,7 +133,32 @@ export function PatientDetailPage() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">{t('patients.emailField')}</p>
-            <p className="text-base">{patient.email || '—'}</p>
+            <div className="flex items-center gap-2">
+              <span className="text-base">{patient.email || '—'}</span>
+              {patient.email && (
+                <Badge
+                  className={patient.email_verified ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}
+                >
+                  {patient.email_verified ? t('patients.emailVerified') : t('patients.emailNotVerified')}
+                </Badge>
+              )}
+              {patient.email && !patient.email_verified && (
+                <ResendVerificationButton patientId={patient.id} />
+              )}
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">{t('patients.emailNotificationsConsent')}</p>
+            <div className="flex items-center gap-2">
+              <Badge
+                className={patient.email_notifications_consent ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}
+              >
+                {patient.email_notifications_consent ? t('common.yes') : t('common.no')}
+              </Badge>
+              {patient.email_notifications_consent && patient.email_notifications_consent_at && (
+                <span className="text-xs text-muted-foreground">{t('patients.emailNotificationsConsentAt')}: {format(new Date(patient.email_notifications_consent_at), 'MMM d, yyyy HH:mm')}</span>
+              )}
+            </div>
           </div>
           <div className="md:col-span-2">
             <p className="text-sm font-medium text-muted-foreground">{t('patients.notes')}</p>

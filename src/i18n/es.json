@@ -105,6 +105,14 @@
     "emailField": "Correo Electrónico",
     "status": "Estado",
     "notes": "Notas",
+    "emailVerified": "Correo verificado",
+    "emailNotVerified": "Correo no verificado",
+    "emailNotificationsConsent": "Consentimiento para notificaciones por correo",
+    "emailNotificationsConsentAt": "Consentimiento otorgado el",
+    "resendVerification": "Reenviar verificación",
+    "verificationSent": "Correo de verificación enviado.",
+    "verificationFailed": "No se pudo enviar el correo de verificación."
+
     "patientInformation": "Información del Paciente",
     "patientId": "ID Paciente: {{id}}",
     "firstName": "Nombre",
