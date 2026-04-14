@@ -107,7 +107,12 @@ export function ReportDetailPage() {
           title: t('reports.reportFinalized'),
           description: t('reports.notificationSent'),
         })
-      } else if (result.email_notification_sent === false) {
+      } else if (result.email_notification_skip_reason === 'no_consent') {
+        toast({
+          title: t('reports.reportFinalized'),
+          description: t('reports.notificationSkippedNoConsent'),
+        })
+      } else {
         toast({
           title: t('reports.reportFinalized'),
           description: t('reports.notificationSkipped'),

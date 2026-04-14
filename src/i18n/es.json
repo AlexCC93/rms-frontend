@@ -300,6 +300,7 @@
     "emailNotificationFailed": "Informe finalizado, pero no se pudo entregar el correo electrónico.",
     "notificationSent": "Se ha enviado un enlace seguro de descarga al correo del paciente.",
     "notificationSkipped": "Informe finalizado. No se pudo enviar la notificación por correo.",
+    "notificationSkippedNoConsent": "Informe finalizado. La notificación no fue enviada porque el paciente no ha verificado su correo electrónico o no ha dado consentimiento para recibir notificaciones.",
     "resendNotification": "Reenviar Notificación",
     "resendSuccess": "Enlace de notificación reenviado exitosamente.",
     "resendFailed": "Error al reenviar la notificación.",

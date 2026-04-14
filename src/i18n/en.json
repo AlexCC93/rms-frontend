@@ -300,6 +300,7 @@
     "emailNotificationFailed": "Report finalized, but the email could not be delivered.",
     "notificationSent": "A secure download link has been emailed to the patient.",
     "notificationSkipped": "Report finalized. Email notification could not be sent.",
+    "notificationSkippedNoConsent": "Report finalized. The email notification was not sent because the patient has not verified their email or has not consented to receive notifications.",
     "resendNotification": "Resend Notification",
     "resendSuccess": "Notification link resent successfully.",
     "resendFailed": "Failed to resend notification.",
