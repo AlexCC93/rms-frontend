@@ -26,6 +26,9 @@ export interface Patient {
   national_id: string
   phone?: string
   email?: string
+  email_verified?: boolean
+  email_notifications_consent?: boolean
+  email_notifications_consent_at?: string | null
   notes?: string
   is_active: boolean
   is_deleted: boolean
@@ -161,6 +164,7 @@ export interface RadiologyReport {
   amended_by_report_id?: string
   finalized_at?: string
   email_notification_sent?: boolean
+  email_notification_skip_reason?: string | null
   is_deleted: boolean
   created_at: string
   updated_at: string

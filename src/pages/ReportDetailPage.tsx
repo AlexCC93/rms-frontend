@@ -107,7 +107,12 @@ export function ReportDetailPage() {
           title: t('reports.reportFinalized'),
           description: t('reports.notificationSent'),
         })
-      } else if (result.email_notification_sent === false) {
+      } else if (result.email_notification_skip_reason === 'no_consent') {
+        toast({
+          title: t('reports.reportFinalized'),
+          description: t('reports.notificationSkippedNoConsent'),
+        })
+      } else {
         toast({
           title: t('reports.reportFinalized'),
           description: t('reports.notificationSkipped'),
@@ -206,17 +211,28 @@ export function ReportDetailPage() {
               {t('reports.createAmendment')}
             </Button>
           )}
-          {report.status === 'final' && canFinalizeReport(user?.role) && (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isResending}
-              onClick={() => resendNotification(report.id)}
-            >
-              <RefreshCw className={`mr-2 h-4 w-4 ${isResending ? 'animate-spin' : ''}`} />
-              {isResending ? t('common.loading') : t('reports.resendNotification')}
-            </Button>
-          )}
+          {report.status === 'final' && canFinalizeReport(user?.role) && (() => {
+            const canNotify = !!(patient?.email && patient?.email_verified && patient?.email_notifications_consent)
+            return (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isResending || !canNotify}
+                  onClick={() => resendNotification(report.id)}
+                >
+                  <RefreshCw className={`mr-2 h-4 w-4 ${isResending ? 'animate-spin' : ''}`} />
+                  {isResending ? t('common.loading') : t('reports.resendNotification')}
+                </Button>
+                {!canNotify && (
+                  <span className="text-sm text-yellow-600 flex items-center gap-1">
+                    <AlertTriangle className="h-4 w-4" />
+                    {t('reports.resendDisabledReason')}
+                  </span>
+                )}
+              </div>
+            )
+          })()}
         </div>
       </div>
 
@@ -425,7 +441,11 @@ export function ReportDetailPage() {
         open={confirmFinalizeOpen}
         onOpenChange={setConfirmFinalizeOpen}
         title={t('reports.confirmFinalize')}
-        message={t('reports.confirmFinalizeMsg')}
+        message={
+          patient?.email && patient?.email_verified && patient?.email_notifications_consent
+            ? t('reports.confirmFinalizeMsg')
+            : `${t('reports.confirmFinalizeMsg')}\n\n${t('reports.confirmFinalizeNoNotification')}`
+        }
         confirmLabel={t('reports.finalizeReport')}
         onConfirm={handleFinalize}
         isLoading={finalizeReport.isPending}

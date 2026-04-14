@@ -39,4 +39,8 @@ export const patientsApi = {
   deletePatient: async (id: string): Promise<void> => {
     await apiClient.delete(`/api/v1/patients/${id}`)
   },
+
+  sendVerificationEmail: async (id: string): Promise<void> => {
+    await apiClient.post(`/api/v1/patients/${id}/send-verification-email`)
+  },
 }

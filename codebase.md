@@ -59,7 +59,7 @@ Single source of truth for all TypeScript interfaces and union types.
 - `ReportStatus` — `'draft' | 'final' | 'amended'`
 - `UserRole` — `'admin' | 'radiologist' | 'staff'`
 
-**Entity interfaces:** `User`, `Patient`, `Appointment`, `RadiologistSchedule`, `AvailableSlot`, `AvailableSlotsResponse`, `RadiologyReport` (includes `parent_report_id?` and `amended_by_report_id?` for bidirectional amendment linking, and `email_notification_sent?: boolean` populated only on the finalize response), `ReportImage`, `ReportImageListResponse`, `TimelineEntry`, `DashboardStats`
+**Entity interfaces:** `User`, `Patient` (includes `email_verified?: boolean`, `email_notifications_consent?: boolean`, `email_notifications_consent_at?: string | null` for tracking patient email verification and notification consent status), `Appointment`, `RadiologistSchedule`, `AvailableSlot`, `AvailableSlotsResponse`, `RadiologyReport` (includes `parent_report_id?` and `amended_by_report_id?` for bidirectional amendment linking, and `email_notification_sent?: boolean` populated only on the finalize response), `ReportImage`, `ReportImageListResponse`, `TimelineEntry`, `DashboardStats`, `ResendNotificationResponse` (`notification_sent: boolean`, `detail: string`)
 
 **CRUD payload types:** `PatientCreate`, `PatientUpdate`, `AppointmentCreate`, `AppointmentUpdate`, `AppointmentStatusUpdate`, `RadiologyReportCreate`, `RadiologyReportUpdate`, `RadiologistScheduleCreate`
 
@@ -67,7 +67,7 @@ Single source of truth for all TypeScript interfaces and union types.
 
 **Form data types:** `PatientFormData`, `AppointmentFormData`, `ReportFormData` — typed counterparts used by React Hook Form.
 
-**Auth types:** `LoginRequest`, `LoginResponse`, `RefreshRequest`, `RefreshResponse`, `ApiError`
+**Auth / notification types:** `LoginRequest`, `LoginResponse`, `RefreshRequest`, `RefreshResponse`, `ApiError`, `ResendNotificationResponse`
 
 **`ReportImage`** — `{ id, report_id, filename, content_type, file_size, uploaded_by_id, is_active, created_at }`. Returned by the report-images endpoints.
 
@@ -119,7 +119,7 @@ Configures the axios instance (`apiClient`) with:
 Endpoints: `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`.
 
 ### `src/api/patients.ts`
-CRUD for `/api/v1/patients`. Handles both paginated `{ items, total }` and flat array responses from the backend. Methods: `getPatients(filters?)`, `getPatient(id)`, `createPatient(data)`, `updatePatient(id, data)`, `deletePatient(id)`.
+CRUD for `/api/v1/patients`. Handles both paginated `{ items, total }` and flat array responses from the backend. Methods: `getPatients(filters?)`, `getPatient(id)`, `createPatient(data)`, `updatePatient(id, data)`, `deletePatient(id)`, `sendVerificationEmail(id)` — `POST /api/v1/patients/:id/send-verification-email` (resends the 48-hour email verification link).
 
 ### `src/api/appointments.ts`
 CRUD for `/api/v1/appointments`. Always returns paginated `{ items, total }`. Methods: `getAppointments(filters?)`, `getAppointment(id)`, `createAppointment(data)`, `updateAppointment(id, data)`, `updateAppointmentStatus(id, data)`, `deleteAppointment(id)`.
@@ -140,7 +140,8 @@ CRUD + finalize + image management for `/api/v1/reports`.
 - `getReport(id)`
 - `createReport(data)`
 - `updateReport(id, data)`
-- `finalizeReport(id)` — `PATCH /api/v1/reports/:id/finalize`; response includes `email_notification_sent` (`true`/`false`/`null`)
+- `finalizeReport(id)` — `PATCH /api/v1/reports/:id/finalize`; response includes `email_notification_sent` (`true`/`false`/`null`). On finalization the backend emails a secure, time-limited download link (not the PDF itself) to the patient, in compliance with HIPAA.
+- `resendNotification(reportId)` — `POST /api/v1/reports/:id/resend-notification`; returns `ResendNotificationResponse`. Re-sends the secure download link for a finalized report (link validity: 72 hours).
 - `deleteReport(id)`
 
 **Report image methods** (all under `/api/v1/reports/:reportId/images`):
@@ -178,6 +179,7 @@ Exposes `login`, `loginAsync`, `isLoggingIn`, `loginError`, `logout`. On success
 - `useCreatePatient()` — invalidates `['patients']` on success
 - `useUpdatePatient()` — invalidates list + single entry
 - `useDeletePatient()` — invalidates list
+- `useSendVerificationEmail()` — mutation; POSTs to resend the email verification link. On success invalidates `['patients', id]`.
 
 ### `src/hooks/useAppointments.ts`
 - `useAppointments(filters?, options?)` — supports `enabled` flag (used in patient detail)
@@ -202,6 +204,7 @@ Exposes `login`, `loginAsync`, `isLoggingIn`, `loginError`, `logout`. On success
 - `useUpdateReport()` — invalidates list, single entry, dashboard, timeline
 - `useFinalizeReport()` — invalidates list, single entry, dashboard, timeline
 - `useDeleteReport()` — invalidates `['reports']`, `['dashboard']`
+- `useResendNotification()` — mutation; POSTs to resend the secure report download link for a finalized report. Shows a success or failure toast based on `notification_sent` in the response.
 
 **Report image hooks:**
 - `useReportImages(reportId)` — key `['reportImages', reportId]`; fetches the full image list for a report
@@ -257,9 +260,11 @@ Searchable list of all patients. Search input is debounced (300 ms) and passed t
 
 ### `src/pages/PatientDetailPage.tsx`
 Detail view for a single patient, using a tab layout:
-- **Overview** — demographics, contact info, audit timestamps
+- **Overview** — demographics, contact info, email verification and notification consent status, audit timestamps
 - **Appointments** — table of all appointments for this patient (filtered by `patient_id`)
 - **Timeline** — full imaging history via `useTimeline`
+
+The email field displays a green "Email Verified" or red "Email Not Verified" badge. A separate badge shows whether the patient has consented to email notifications, along with the consent timestamp when applicable. If the patient's email is not yet verified, a "Resend Verification" button appears inline, calling `POST /api/v1/patients/:id/send-verification-email` (the verification link is valid for 48 hours).
 
 Provides "New Appointment" shortcut button that navigates to `/appointments/new?patient_id=:id`.
 
@@ -303,7 +308,8 @@ Full report viewer and editor. Features:
 - Inline edit mode — findings and impression use `RichTextEditor` (with `reportId` prop so images are uploaded immediately to the backend)
 - Report images panel via `ReportImageManager`
 - Radiologist re-assignment dropdown (admin/radiologist only)
-- Finalize (`PATCH .../finalize`) with confirmation dialog; on success, checks `email_notification_sent` — if `false`, shows a destructive warning toast indicating the email could not be delivered
+- Finalize (`PATCH .../finalize`) with confirmation dialog; on success, checks `email_notification_sent` — if `true`, shows a toast confirming a secure download link was emailed to the patient; if `false`, shows a toast indicating the notification could not be sent (HIPAA-compliant: no PDF is attached to the email, only a time-limited download link). The confirmation dialog dynamically appends a warning when the patient's email is not verified or they have not consented to notifications (`confirmFinalizeNoNotification` i18n key).
+- Resend notification — a "Resend Notification" button is visible on finalized reports for admins and radiologists. Re-sends the secure download link (valid for 72 hours) via `POST .../resend-notification`. The button is **disabled** when the patient's email is not verified or notifications are not consented, and an inline yellow warning with an `AlertTriangle` icon explains why (`resendDisabledReason` i18n key).
 - Amend — creates a new `draft` report linked via `parent_report_id`
 - Superseded banner — when a report has `status === 'amended'`, a yellow warning banner is shown. If `amended_by_report_id` is set, a "View Amendment" button navigates to the child report that superseded it.
 - Version history badge and parent report reference
@@ -446,9 +452,9 @@ Configures i18next with `LanguageDetector` (detection order: `localStorage` → 
 - `auth` — Login, Logout, email/password labels
 - `nav` — Sidebar navigation items (Dashboard, Patients, Appointments, Reports, Schedules)
 - `dashboard` — Dashboard title, welcome message, stat labels, action buttons
-- `patients` — Patient list/detail/form labels, search placeholder, table headers, post-creation appointment prompt
+- `patients` — Patient list/detail/form labels, search placeholder, table headers, post-creation appointment prompt, email verification and notification consent labels
 - `appointments` — Appointment list/detail/form labels, status labels, filter placeholders
-- `reports` — Report list/detail/form labels, status labels, finalize/amend actions
+- `reports` — Report list/detail/form labels, status labels, finalize/amend actions, resend notification labels
 - `schedule` — Schedule management labels, day-of-week names, form fields
 - `timeline` — Timeline page labels
 - `forbidden` — 403 error page text
