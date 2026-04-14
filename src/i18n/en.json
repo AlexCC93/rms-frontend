@@ -271,6 +271,7 @@
     "createAmendmentFailed": "Create Amendment Failed",
     "confirmFinalize": "Finalize Report",
     "confirmFinalizeMsg": "Finalized reports cannot be edited. Are you sure you want to proceed?",
+    "confirmFinalizeNoNotification": "Note: The patient's email is either not verified or they have not consented to email notifications. The report PDF download link will not be sent by email.",
     "confirmAmendment": "Create Amendment",
     "confirmAmendmentMsg": "This will mark the current finalized report as amended and create a new draft for corrections. The original report is permanently preserved for audit purposes. Do you want to proceed?",
     "superseded": "This report has been superseded",
@@ -301,7 +302,8 @@
     "notificationSkipped": "Report finalized. Email notification could not be sent.",
     "resendNotification": "Resend Notification",
     "resendSuccess": "Notification link resent successfully.",
-    "resendFailed": "Failed to resend notification."
+    "resendFailed": "Failed to resend notification.",
+    "resendDisabledReason": "Patient email not verified or notifications not consented."
   },
   "schedule": {
     "title": "Schedule Management",

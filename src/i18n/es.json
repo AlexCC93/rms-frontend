@@ -271,6 +271,7 @@
     "createAmendmentFailed": "Error al Crear Enmienda",
     "confirmFinalize": "Finalizar Informe",
     "confirmFinalizeMsg": "Los informes finalizados no se pueden editar. ¿Está seguro de que desea continuar?",
+    "confirmFinalizeNoNotification": "Nota: El correo del paciente no está verificado o no ha dado consentimiento para recibir notificaciones. El enlace de descarga del informe PDF no se enviará por correo electrónico.",
     "confirmAmendment": "Crear Enmienda",
     "confirmAmendmentMsg": "Esto marcará el informe finalizado actual como enmendado y creará un nuevo borrador para correcciones. El informe original se conserva permanentemente para fines de auditoría. ¿Desea continuar?",
     "superseded": "Este informe ha sido reemplazado",
@@ -301,7 +302,8 @@
     "notificationSkipped": "Informe finalizado. No se pudo enviar la notificación por correo.",
     "resendNotification": "Reenviar Notificación",
     "resendSuccess": "Enlace de notificación reenviado exitosamente.",
-    "resendFailed": "Error al reenviar la notificación."
+    "resendFailed": "Error al reenviar la notificación.",
+    "resendDisabledReason": "El correo del paciente no está verificado o no ha dado consentimiento para notificaciones."
   },
   "schedule": {
     "title": "Gestión de Horarios",

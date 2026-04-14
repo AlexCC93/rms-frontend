@@ -45,7 +45,7 @@ Administrators can define recurring weekly availability templates for each radio
 Radiologists create reports tied to completed appointments. Each report includes clinical findings and an impression, authored using a rich text editor that supports formatted text and embedded images. Reports follow a controlled lifecycle:
 
 1. **Draft** — The report can be freely edited. Images can be attached, and content can be revised as many times as needed.
-2. **Final** — Once finalized, the report is locked and cannot be changed. This ensures the integrity of the clinical record. A secure, time-limited download link is emailed to the patient (no PDF is attached to the email, in compliance with HIPAA regulations). The link expires after 72 hours. If the patient does not access the report in time, an administrator or the issuing radiologist can resend the notification link from the report detail page.
+2. **Final** — Once finalized, the report is locked and cannot be changed. This ensures the integrity of the clinical record. A secure, time-limited download link is emailed to the patient (no PDF is attached to the email, in compliance with HIPAA regulations). The link expires after 72 hours. If the patient does not access the report in time, an administrator or the issuing radiologist can resend the notification link from the report detail page. The finalization confirmation dialog proactively warns the radiologist when the patient's email is not verified or they have not consented to notifications, so the clinician is aware before confirming. The resend notification button is also disabled in this case, with an inline warning explaining why.
 3. **Amended** — If corrections are needed after finalization, the system supports a formal amendment process. A new draft is created that references the original, and the original report is permanently preserved and marked as superseded. Users can navigate between the original and its amendment in both directions.
 
 Every report tracks its version number and maintains a full audit trail of creation and modification timestamps.
@@ -86,7 +86,7 @@ RMS-lite is designed around principles that are essential in a clinical setting:
 
 - **Report integrity.** Finalized reports are immutable. Amendments create a new version while permanently preserving the original, ensuring a complete and tamper-proof clinical record.
 
-- **HIPAA-compliant notifications.** When a report is finalized, the patient receives an email containing a secure, time-limited download link — not the PDF itself. Links expire after 72 hours and can be resent by an administrator or the issuing radiologist. Patients must verify their email and consent to notifications before receiving these communications.
+- **HIPAA-compliant notifications.** When a report is finalized, the patient receives an email containing a secure, time-limited download link — not the PDF itself. Links expire after 72 hours and can be resent by an administrator or the issuing radiologist. Patients must verify their email and consent to notifications before receiving these communications. The finalization dialog and the resend button both surface clear warnings when these prerequisites are not met, ensuring the radiologist is never surprised by a missing notification.
 
 ---
 

@@ -308,8 +308,8 @@ Full report viewer and editor. Features:
 - Inline edit mode — findings and impression use `RichTextEditor` (with `reportId` prop so images are uploaded immediately to the backend)
 - Report images panel via `ReportImageManager`
 - Radiologist re-assignment dropdown (admin/radiologist only)
-- Finalize (`PATCH .../finalize`) with confirmation dialog; on success, checks `email_notification_sent` — if `true`, shows a toast confirming a secure download link was emailed to the patient; if `false`, shows a toast indicating the notification could not be sent (HIPAA-compliant: no PDF is attached to the email, only a time-limited download link)
-- Resend notification — a "Resend Notification" button is visible on finalized reports for admins and radiologists. Re-sends the secure download link (valid for 72 hours) via `POST .../resend-notification`. No confirmation dialog needed.
+- Finalize (`PATCH .../finalize`) with confirmation dialog; on success, checks `email_notification_sent` — if `true`, shows a toast confirming a secure download link was emailed to the patient; if `false`, shows a toast indicating the notification could not be sent (HIPAA-compliant: no PDF is attached to the email, only a time-limited download link). The confirmation dialog dynamically appends a warning when the patient's email is not verified or they have not consented to notifications (`confirmFinalizeNoNotification` i18n key).
+- Resend notification — a "Resend Notification" button is visible on finalized reports for admins and radiologists. Re-sends the secure download link (valid for 72 hours) via `POST .../resend-notification`. The button is **disabled** when the patient's email is not verified or notifications are not consented, and an inline yellow warning with an `AlertTriangle` icon explains why (`resendDisabledReason` i18n key).
 - Amend — creates a new `draft` report linked via `parent_report_id`
 - Superseded banner — when a report has `status === 'amended'`, a yellow warning banner is shown. If `amended_by_report_id` is set, a "View Amendment" button navigates to the child report that superseded it.
 - Version history badge and parent report reference
