@@ -111,8 +111,7 @@
     "emailNotificationsConsentAt": "Consentimiento otorgado el",
     "resendVerification": "Reenviar verificación",
     "verificationSent": "Correo de verificación enviado.",
-    "verificationFailed": "No se pudo enviar el correo de verificación."
-
+    "verificationFailed": "No se pudo enviar el correo de verificación.",
     "patientInformation": "Información del Paciente",
     "patientId": "ID Paciente: {{id}}",
     "firstName": "Nombre",

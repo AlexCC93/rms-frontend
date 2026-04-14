@@ -111,8 +111,7 @@
     "emailNotificationsConsentAt": "Consent Given At",
     "resendVerification": "Resend Verification",
     "verificationSent": "Verification email sent.",
-    "verificationFailed": "Failed to send verification email."
-
+    "verificationFailed": "Failed to send verification email.",
     "patientInformation": "Patient Information",
     "patientId": "Patient ID: {{id}}",
     "firstName": "First Name",

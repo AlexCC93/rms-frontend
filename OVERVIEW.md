@@ -26,6 +26,8 @@ RMS-lite supports three user roles, each with tailored access to the features th
 
 Register and maintain patient records including demographics, contact information, and clinical notes. Patients can be searched instantly with a live search bar. Each patient has a dedicated profile page showing their full appointment history and imaging timeline. Records can be soft-deleted when no longer active, preserving data integrity for audit purposes.
 
+The system tracks patient email verification and notification consent status. The patient detail page displays at-a-glance badges showing whether the patient's email has been verified and whether they have consented to receive email notifications (with the consent timestamp). If a patient's verification link has expired (48-hour validity), staff can resend the verification email directly from the patient detail page.
+
 After creating a new patient, the system prompts the user with the option to immediately schedule an appointment for that patient. This streamlines the common workflow where a radiologist registers a patient and needs to book their first imaging study — all without leaving the current flow or requiring an administrator to intervene.
 
 ### Appointment Scheduling
@@ -43,7 +45,7 @@ Administrators can define recurring weekly availability templates for each radio
 Radiologists create reports tied to completed appointments. Each report includes clinical findings and an impression, authored using a rich text editor that supports formatted text and embedded images. Reports follow a controlled lifecycle:
 
 1. **Draft** — The report can be freely edited. Images can be attached, and content can be revised as many times as needed.
-2. **Final** — Once finalized, the report is locked and cannot be changed. This ensures the integrity of the clinical record.
+2. **Final** — Once finalized, the report is locked and cannot be changed. This ensures the integrity of the clinical record. A secure, time-limited download link is emailed to the patient (no PDF is attached to the email, in compliance with HIPAA regulations). The link expires after 72 hours. If the patient does not access the report in time, an administrator or the issuing radiologist can resend the notification link from the report detail page.
 3. **Amended** — If corrections are needed after finalization, the system supports a formal amendment process. A new draft is created that references the original, and the original report is permanently preserved and marked as superseded. Users can navigate between the original and its amendment in both directions.
 
 Every report tracks its version number and maintains a full audit trail of creation and modification timestamps.
@@ -83,6 +85,8 @@ RMS-lite is designed around principles that are essential in a clinical setting:
 - **Full audit trail.** Every record displays when it was created and last updated, providing traceability for compliance and quality assurance.
 
 - **Report integrity.** Finalized reports are immutable. Amendments create a new version while permanently preserving the original, ensuring a complete and tamper-proof clinical record.
+
+- **HIPAA-compliant notifications.** When a report is finalized, the patient receives an email containing a secure, time-limited download link — not the PDF itself. Links expire after 72 hours and can be resent by an administrator or the issuing radiologist. Patients must verify their email and consent to notifications before receiving these communications.
 
 ---
 
