@@ -13,6 +13,7 @@ import {
 import { LogOut, User, Menu } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher'
+import { useNavigate } from 'react-router-dom'
 
 interface TopBarProps {
   onMenuToggle?: () => void
@@ -22,6 +23,7 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
   const user = useAuthStore((state) => state.user)
   const { logout } = useAuth()
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -67,6 +69,11 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
             <DropdownMenuLabel className="font-normal text-muted-foreground">
               {user.email}
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/profile')}>
+              <User className="mr-2 h-4 w-4" />
+              {t('profile.myProfile')}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
               <LogOut className="mr-2 h-4 w-4" />
