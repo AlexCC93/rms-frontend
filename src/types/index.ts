@@ -338,3 +338,17 @@ export interface ReportFormData {
   findings: string
   impression: string
 }
+
+// Radiologist Profile
+export interface RadiologistProfile {
+  user_id: string
+  signature: string | null
+  initials: string | null
+  license_number: string | null
+}
+
+export interface RadiologistProfileUpdate {
+  signature?: string | null
+  initials?: string | null
+  license_number?: string | null
+}

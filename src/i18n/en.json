@@ -418,5 +418,33 @@
   "language": {
     "en": "English",
     "es": "Español"
+  },
+  "profile": {
+    "title": "My Profile",
+    "myProfile": "My Profile",
+    "userInfo": "User Information",
+    "name": "Full Name",
+    "email": "Email",
+    "role": "Role",
+    "radiologistProfile": "Radiologist Profile",
+    "radiologistProfileDescription": "These details appear on finalized radiology reports.",
+    "signature": "Signature",
+    "signatureDescription": "Draw your signature below. It will be embedded in report PDFs.",
+    "signatureDrawHint": "Draw your signature here",
+    "signatureCurrent": "Current saved signature",
+    "clearSignature": "Clear",
+    "initials": "Initials",
+    "initialsPlaceholder": "e.g. KH",
+    "licenseNumber": "License Number",
+    "licenseNumberPlaceholder": "e.g. MED-001",
+    "saveProfile": "Save Profile",
+    "profileSaved": "Profile saved successfully.",
+    "profileNotConfigured": "Profile not yet configured. Fill in the fields below and save.",
+    "licenseInUse": "This license number is already assigned to another radiologist.",
+    "signatureTooLarge": "Signature SVG exceeds the 50 KB limit. Please simplify your signature.",
+    "initialsMaxLength": "Initials must be 10 characters or fewer.",
+    "licenseMaxLength": "License number must be 50 characters or fewer.",
+    "loadingProfile": "Loading profile…",
+    "noRadiologistProfile": "Radiologist profile settings are only available for radiologist accounts."
   }
 }
