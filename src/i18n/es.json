@@ -418,5 +418,33 @@
   "language": {
     "en": "English",
     "es": "Español"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "myProfile": "Mi Perfil",
+    "userInfo": "Información del Usuario",
+    "name": "Nombre Completo",
+    "email": "Correo Electrónico",
+    "role": "Rol",
+    "radiologistProfile": "Perfil del Radiólogo",
+    "radiologistProfileDescription": "Estos datos aparecen en los informes radiológicos finalizados.",
+    "signature": "Firma",
+    "signatureDescription": "Dibuje su firma a continuación. Se incrustará en los PDF de los informes.",
+    "signatureDrawHint": "Dibuje su firma aquí",
+    "signatureCurrent": "Firma guardada actualmente",
+    "clearSignature": "Limpiar",
+    "initials": "Iniciales",
+    "initialsPlaceholder": "ej. KH",
+    "licenseNumber": "Número de Cédula",
+    "licenseNumberPlaceholder": "ej. MED-001",
+    "saveProfile": "Guardar Perfil",
+    "profileSaved": "Perfil guardado correctamente.",
+    "profileNotConfigured": "Perfil aún no configurado. Complete los campos y guarde.",
+    "licenseInUse": "Este número de cédula ya está asignado a otro radiólogo.",
+    "signatureTooLarge": "El SVG de la firma supera el límite de 50 KB. Simplifique su firma.",
+    "initialsMaxLength": "Las iniciales deben tener 10 caracteres o menos.",
+    "licenseMaxLength": "El número de cédula debe tener 50 caracteres o menos.",
+    "loadingProfile": "Cargando perfil…",
+    "noRadiologistProfile": "La configuración del perfil de radiólogo solo está disponible para cuentas de radiólogo."
   }
 }
