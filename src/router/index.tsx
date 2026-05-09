@@ -18,6 +18,8 @@ import { TimelinePage } from '@/pages/TimelinePage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { ScheduleManagementPage } from '@/pages/ScheduleManagementPage'
 import { ProfilePage } from '@/pages/ProfilePage'
+import { AuditPage } from '@/pages/AuditPage'
+import { AuditAccessLogPage } from '@/pages/AuditAccessLogPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user)
@@ -99,6 +101,23 @@ export default function AppRouter() {
           element={
             <RoleGuard roles={['admin']}>
               <ScheduleManagementPage />
+            </RoleGuard>
+          }
+        />
+
+        <Route
+          path="audit"
+          element={
+            <RoleGuard roles={['admin']}>
+              <AuditPage />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="audit/access-log"
+          element={
+            <RoleGuard roles={['admin']}>
+              <AuditAccessLogPage />
             </RoleGuard>
           }
         />

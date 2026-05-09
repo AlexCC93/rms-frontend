@@ -50,7 +50,8 @@
     "patients": "Patients",
     "appointments": "Appointments",
     "reports": "Reports",
-    "schedules": "Schedules"
+    "schedules": "Schedules",
+    "audit": "Audit"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -385,7 +386,28 @@
   },
   "audit": {
     "created": "Created",
-    "updated": "Updated"
+    "updated": "Updated",
+    "pageTitle": "Audit",
+    "pageSubtitle": "Admin-only audit reports for system activity.",
+    "accessLog": {
+      "cardTitle": "Audit Log Report",
+      "cardDescription": "Monthly access log of all actions taken against radiology reports — including views, exports, signatures, and new record creation. Admin use only.",
+      "pageTitle": "AUDIT ACCESS LOG REPORT",
+      "adminOnly": "ADMIN ONLY",
+      "period": "Period",
+      "loading": "Loading audit log…",
+      "totalActions": "Total Actions",
+      "suspiciousFlags": "Suspicious Activity Flags",
+      "colTimestamp": "Timestamp",
+      "colUser": "User",
+      "colAction": "Action",
+      "colRecord": "Record",
+      "noResults": "No audit events for this period.",
+      "errorUnauthorized": "You are not authorized to view this report. Please log in again.",
+      "errorForbidden": "Access denied. This report is restricted to administrators.",
+      "errorInvalidParams": "Invalid date parameters. Please select a valid month and year.",
+      "errorGeneric": "Failed to load audit log. Please try again."
+    }
   },
   "modalities": {
     "XR": "X-Ray (XR)",

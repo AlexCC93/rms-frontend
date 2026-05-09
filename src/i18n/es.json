@@ -50,7 +50,8 @@
     "patients": "Pacientes",
     "appointments": "Citas",
     "reports": "Informes",
-    "schedules": "Horarios"
+    "schedules": "Horarios",
+    "audit": "Auditoría"
   },
   "dashboard": {
     "title": "Panel",
@@ -385,7 +386,28 @@
   },
   "audit": {
     "created": "Creado",
-    "updated": "Actualizado"
+    "updated": "Actualizado",
+    "pageTitle": "Auditoría",
+    "pageSubtitle": "Informes de auditoría del sistema, solo para administradores.",
+    "accessLog": {
+      "cardTitle": "Informe de Registro de Acceso",
+      "cardDescription": "Registro mensual de todas las acciones realizadas sobre los informes radiológicos — incluyendo visualizaciones, exportaciones, firmas y creación de nuevos registros. Solo para administradores.",
+      "pageTitle": "INFORME DE REGISTRO DE ACCESO",
+      "adminOnly": "SOLO ADMIN",
+      "period": "Período",
+      "loading": "Cargando registro de auditoría…",
+      "totalActions": "Acciones Totales",
+      "suspiciousFlags": "Alertas de Actividad Sospechosa",
+      "colTimestamp": "Marca de Tiempo",
+      "colUser": "Usuario",
+      "colAction": "Acción",
+      "colRecord": "Registro",
+      "noResults": "No hay eventos de auditoría para este período.",
+      "errorUnauthorized": "No está autorizado para ver este informe. Por favor inicie sesión de nuevo.",
+      "errorForbidden": "Acceso denegado. Este informe está restringido a administradores.",
+      "errorInvalidParams": "Parámetros de fecha inválidos. Seleccione un mes y año válidos.",
+      "errorGeneric": "No se pudo cargar el registro de auditoría. Por favor intente de nuevo."
+    }
   },
   "modalities": {
     "XR": "Rayos X (XR)",
