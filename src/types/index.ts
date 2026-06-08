@@ -356,6 +356,48 @@ export interface RadiologistProfileUpdate {
 // Audit
 export type AuditAction = 'CREATE' | 'FINALIZE' | 'VIEW' | 'EXPORT'
 
+// System Activity
+export type SystemActivityFlag = 'OK' | 'Suspicious' | 'Review'
+export type SystemActivityRole = 'admin' | 'radiologist' | 'staff' | null
+
+export interface SystemActivityRow {
+  timestamp: string        // ISO 8601 UTC
+  user: string
+  role: SystemActivityRole
+  action: string           // upper-cased label from server
+  entity_type: string
+  record_id: string
+  flag: SystemActivityFlag
+  flag_reason: string | null
+  event_count: number
+  window_end: string | null
+}
+
+export interface SystemActivitySummary {
+  active_users: number
+  total_actions: number
+  failed_logins: number
+  phi_access_events: number
+  suspicious_activity_flags: number
+}
+
+export interface SystemActivityReport {
+  period_start: string
+  period_end: string
+  summary: SystemActivitySummary
+  total_rows: number
+  page: number
+  page_size: number
+  rows: SystemActivityRow[]
+}
+
+export interface SystemActivityParams {
+  start_at: string
+  end_at: string
+  page?: number
+  page_size?: number
+}
+
 export interface AuditAccessLogRow {
   timestamp: string       // ISO 8601 UTC
   user: string
