@@ -7,6 +7,7 @@ import {
   FileText,
   Activity,
   CalendarClock,
+  ClipboardList,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
@@ -49,6 +50,12 @@ export function Sidebar({ onNavigate }: SidebarProps) {
       label: t('nav.schedules'),
       path: '/schedule',
       icon: CalendarClock,
+      roles: ['admin'],
+    },
+    {
+      label: t('nav.audit'),
+      path: '/audit',
+      icon: ClipboardList,
       roles: ['admin'],
     },
   ]
