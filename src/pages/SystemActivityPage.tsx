@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { format, parseISO, addDays, startOfDay } from 'date-fns'
+import { format, parseISO, startOfDay } from 'date-fns'
 import { ArrowLeft, Activity, Users, Zap, ShieldAlert, Eye, AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { buildExclusiveLocalDateRange } from '@/utils/dateRange'
 import type { SystemActivityFlag, SystemActivityRole } from '@/types'
 
 // ── Date helpers ────────────────────────────────────────────────────────────
@@ -29,17 +30,6 @@ import type { SystemActivityFlag, SystemActivityRole } from '@/types'
 /** Returns YYYY-MM-DD for the given UTC Date */
 function toDateInput(d: Date): string {
   return format(d, 'yyyy-MM-dd')
-}
-
-/** Converts a YYYY-MM-DD string to an ISO-8601 UTC start-of-day string */
-function toUtcStart(dateStr: string): string {
-  return `${dateStr}T00:00:00Z`
-}
-
-/** Converts a YYYY-MM-DD string to an ISO-8601 UTC start-of-next-day (exclusive end) */
-function toUtcEnd(dateStr: string): string {
-  const d = new Date(`${dateStr}T00:00:00Z`)
-  return toDateInput(addDays(d, 1)) + 'T00:00:00Z'
 }
 
 /** Format ISO UTC timestamp to "YYYY-MM-DD HH:mm UTC" */
@@ -162,8 +152,7 @@ export function SystemActivityPage() {
   const [page, setPage] = useState(1)
 
   const params = {
-    start_at: toUtcStart(appliedStart),
-    end_at: toUtcEnd(appliedEnd),
+    ...buildExclusiveLocalDateRange(appliedStart, appliedEnd),
     page,
     page_size: PAGE_SIZE,
   }
