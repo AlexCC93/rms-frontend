@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import axios from 'axios'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useToast } from '@/hooks/use-toast'
 import { getErrorMessage } from '@/api/client'
 import { Activity } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -26,7 +26,6 @@ export function LoginPage() {
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const { loginAsync, isLoggingIn } = useAuth()
-  const { toast } = useToast()
   const { t } = useTranslation()
   const [error, setError] = useState<string>('')
 
@@ -50,13 +49,11 @@ export function LoginPage() {
     try {
       await loginAsync(data)
     } catch (err) {
-      const errorMsg = getErrorMessage(err)
+      const errorMsg = axios.isAxiosError(err) && err.response?.status === 401
+        ? t('auth.invalidCredentials')
+        : getErrorMessage(err)
       setError(errorMsg)
-      toast({
-        variant: 'destructive',
-        title: t('auth.loginFailed'),
-        description: errorMsg,
-      })
+      form.resetField('password')
     }
   }
 
@@ -80,6 +77,7 @@ export function LoginPage() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="username"
                 placeholder="doctor@hospital.com"
                 {...form.register('email')}
               />
@@ -94,6 +92,7 @@ export function LoginPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 {...form.register('password')}
               />
               {form.formState.errors.password && (
@@ -103,7 +102,7 @@ export function LoginPage() {
               )}
             </div>
             {error && (
-              <div className="rounded-md bg-destructive/15 p-3">
+              <div className="rounded-md bg-destructive/15 p-3" role="alert" aria-live="polite">
                 <p className="text-sm text-destructive">{error}</p>
               </div>
             )}

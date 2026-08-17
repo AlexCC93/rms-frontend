@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import type { ApiError, RefreshResponse } from '@/types'
+import { useAuthStore } from '@/stores/authStore'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
@@ -51,6 +52,11 @@ apiClient.interceptors.response.use(
       _retry?: boolean
     }
 
+    // Invalid login credentials are an expected form error, not an expired session.
+    if (error.response?.status === 401 && originalRequest.url?.includes('/api/v1/auth/login')) {
+      return Promise.reject(error)
+    }
+
     // If error is 401 and we haven't retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
@@ -79,6 +85,7 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
+        useAuthStore.getState().clearAuth()
         window.location.href = '/login'
         return Promise.reject(error)
       }
@@ -114,6 +121,7 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
+        useAuthStore.getState().clearAuth()
         window.location.href = '/login'
 
         return Promise.reject(refreshError)

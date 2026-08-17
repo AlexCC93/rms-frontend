@@ -41,6 +41,7 @@
     "email": "Correo electrónico",
     "password": "Contraseña",
     "loginFailed": "Error de inicio de sesión",
+    "invalidCredentials": "El correo electrónico o la contraseña son incorrectos.",
     "invalidEmail": "Dirección de correo electrónico inválida",
     "passwordRequired": "La contraseña es obligatoria",
     "myAccount": "Mi Cuenta"
@@ -51,7 +52,34 @@
     "appointments": "Citas",
     "reports": "Informes",
     "schedules": "Horarios",
-    "audit": "Auditoría"
+    "audit": "Auditoría",
+    "users": "Usuarios"
+  },
+  "users": {
+    "title": "Gestión de Usuarios",
+    "subtitle": "Cree cuentas, controle el acceso y revise el historial administrativo.",
+    "loading": "Cargando usuarios...",
+    "empty": "No se encontraron usuarios",
+    "emptyDescription": "Ajuste los filtros o cree un nuevo usuario.",
+    "you": "Usted",
+    "fields": { "email": "Correo electrónico", "fullName": "Nombre completo", "role": "Rol", "status": "Estado", "password": "Contraseña", "newPassword": "Nueva contraseña", "confirmPassword": "Confirmar contraseña", "createdAt": "Creado", "actions": "Acciones" },
+    "roles": { "admin": "Administrador", "radiologist": "Radiólogo", "staff": "Personal" },
+    "filters": { "search": "Buscar por nombre o correo", "role": "Filtrar por rol", "status": "Filtrar por estado", "allRoles": "Todos los roles", "allStatuses": "Todos los estados" },
+    "create": { "action": "Crear usuario", "title": "Crear usuario", "description": "Cree una cuenta y asigne su nivel de acceso inicial.", "submit": "Crear usuario" },
+    "edit": {
+      "title": "Editar usuario",
+      "description": "Actualice la identidad, el rol y el acceso de la cuenta.",
+      "sessionWarning": "Cambiar el rol o estado de la cuenta revoca inmediatamente las sesiones existentes del usuario.",
+      "confirmTitle": "Confirmar cambio privilegiado",
+      "confirmDeactivate": "¿Desactivar esta cuenta? Se cerrará la sesión del usuario y ya no podrá iniciar sesión.",
+      "confirmDemote": "¿Quitar el acceso de administrador a esta cuenta? Se revocarán las sesiones existentes.",
+      "confirmPromote": "¿Conceder acceso de administrador a esta cuenta? Esto otorga privilegios administrativos completos y revoca las sesiones existentes."
+    },
+    "password": { "action": "Restablecer contraseña", "title": "Restablecer contraseña", "description": "Establezca una nueva contraseña para {{email}}.", "sessionWarning": "Confirmar este cambio revoca inmediatamente todas las sesiones existentes del usuario.", "submit": "Confirmar restablecimiento", "show": "Mostrar contraseña", "hide": "Ocultar contraseña" },
+    "audit": { "action": "Ver historial de auditoría", "title": "Historial de auditoría del usuario", "loading": "Cargando historial de auditoría...", "empty": "No se encontraron eventos de auditoría para este usuario.", "actor": "Actor", "system": "Sistema", "passwordProtected": "Los valores de contraseña nunca se registran ni se muestran." },
+    "validation": { "invalidEmail": "Introduzca un correo electrónico válido.", "nameRequired": "El nombre completo es obligatorio para las cuentas de personal y radiólogos.", "passwordLength": "La contraseña debe contener al menos 8 caracteres.", "passwordsMatch": "Las contraseñas deben coincidir." },
+    "toasts": { "created": "Usuario creado", "createdDescription": "La nueva cuenta está lista para usarse.", "createFailed": "No se pudo crear el usuario", "updated": "Usuario actualizado", "updatedDescription": "Los cambios de la cuenta se guardaron.", "updateFailed": "No se pudo actualizar el usuario", "passwordReset": "Contraseña restablecida", "passwordResetDescription": "La nueva contraseña se guardó y se revocaron las sesiones existentes.", "passwordResetFailed": "No se pudo restablecer la contraseña" },
+    "errors": { "unauthorized": "Su sesión ya no es válida. Inicie sesión de nuevo.", "forbidden": "Solo los administradores pueden gestionar usuarios.", "conflict": "Ese correo electrónico ya está asignado a otro usuario.", "finalAdmin": "El último administrador activo no se puede desactivar ni cambiar a otro rol.", "nameRequired": "Las cuentas de personal y radiólogos deben tener un nombre completo." }
   },
   "dashboard": {
     "title": "Panel",

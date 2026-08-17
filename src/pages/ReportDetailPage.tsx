@@ -57,7 +57,7 @@ export function ReportDetailPage() {
   const resolvedImpressionView = useResolvedHtml(report?.impression)
 
   const handleEdit = async () => {
-    if (report) {
+    if (report && user?.role === 'radiologist') {
       const [rf, ri] = await Promise.all([
         resolveApiImageSrcs(report.findings),
         resolveApiImageSrcs(report.impression),
@@ -73,7 +73,7 @@ export function ReportDetailPage() {
   }
 
   const handleSave = async () => {
-    if (!id) return
+    if (!id || user?.role !== 'radiologist') return
 
     try {
       await updateReport.mutateAsync({
@@ -98,7 +98,7 @@ export function ReportDetailPage() {
   }
 
   const handleFinalize = async () => {
-    if (!id) return
+    if (!id || user?.role !== 'radiologist') return
 
     try {
       const result = await finalizeReport.mutateAsync(id)
@@ -129,7 +129,7 @@ export function ReportDetailPage() {
   }
 
   const handleCreateAmendment = async () => {
-    if (!report) return
+    if (!report || user?.role !== 'radiologist') return
 
     try {
       const newReport = await createReport.mutateAsync({

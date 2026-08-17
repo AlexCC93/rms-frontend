@@ -9,11 +9,37 @@ export type UserRole = 'admin' | 'radiologist' | 'staff'
 export interface User {
   id: string
   email: string
-  full_name: string
+  full_name: string | null
   role: UserRole
   is_active: boolean
   created_at: string
-  updated_at: string
+  updated_at?: string
+}
+
+export interface UserCreate {
+  email: string
+  password: string
+  role: UserRole
+  full_name: string | null
+}
+
+export interface UserUpdate {
+  email?: string
+  full_name?: string | null
+  role?: UserRole
+  is_active?: boolean
+}
+
+export interface UserPasswordReset {
+  new_password: string
+}
+
+export interface UserAuditEntry {
+  id: string
+  action: string
+  actor_user_id: string | null
+  timestamp: string
+  changes: Record<string, unknown>
 }
 
 // Patient

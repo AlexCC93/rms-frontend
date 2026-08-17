@@ -10,11 +10,11 @@ export const canAccessReports = (userRole: UserRole | undefined): boolean => {
 }
 
 export const canEditReport = (userRole: UserRole | undefined): boolean => {
-  return hasRole(userRole, ['admin', 'radiologist'])
+  return hasRole(userRole, ['radiologist'])
 }
 
 export const canFinalizeReport = (userRole: UserRole | undefined): boolean => {
-  return hasRole(userRole, ['admin', 'radiologist'])
+  return hasRole(userRole, ['radiologist'])
 }
 
 export const canDeletePatient = (userRole: UserRole | undefined): boolean => {

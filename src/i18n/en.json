@@ -41,6 +41,7 @@
     "email": "Email",
     "password": "Password",
     "loginFailed": "Login Failed",
+    "invalidCredentials": "Email or password is incorrect.",
     "invalidEmail": "Invalid email address",
     "passwordRequired": "Password is required",
     "myAccount": "My Account"
@@ -51,7 +52,34 @@
     "appointments": "Appointments",
     "reports": "Reports",
     "schedules": "Schedules",
-    "audit": "Audit"
+    "audit": "Audit",
+    "users": "Users"
+  },
+  "users": {
+    "title": "User Management",
+    "subtitle": "Create accounts, control access, and review administrative history.",
+    "loading": "Loading users...",
+    "empty": "No users found",
+    "emptyDescription": "Adjust the filters or create a new user.",
+    "you": "You",
+    "fields": { "email": "Email", "fullName": "Full name", "role": "Role", "status": "Status", "password": "Password", "newPassword": "New password", "confirmPassword": "Confirm password", "createdAt": "Created", "actions": "Actions" },
+    "roles": { "admin": "Administrator", "radiologist": "Radiologist", "staff": "Staff" },
+    "filters": { "search": "Search by name or email", "role": "Filter by role", "status": "Filter by status", "allRoles": "All roles", "allStatuses": "All statuses" },
+    "create": { "action": "Create user", "title": "Create user", "description": "Create an account and assign its initial access level.", "submit": "Create user" },
+    "edit": {
+      "title": "Edit user",
+      "description": "Update identity, role, and account access.",
+      "sessionWarning": "Changing a role or account status immediately revokes that user's existing sessions.",
+      "confirmTitle": "Confirm privileged change",
+      "confirmDeactivate": "Deactivate this account? The user will be signed out and will no longer be able to log in.",
+      "confirmDemote": "Remove administrator access from this account? Existing sessions will be revoked.",
+      "confirmPromote": "Grant administrator access to this account? This gives the user full administrative privileges and revokes existing sessions."
+    },
+    "password": { "action": "Reset password", "title": "Reset password", "description": "Set a new password for {{email}}.", "sessionWarning": "Confirming this reset immediately revokes all of the user's existing sessions.", "submit": "Confirm password reset", "show": "Show password", "hide": "Hide password" },
+    "audit": { "action": "View audit history", "title": "User audit history", "loading": "Loading audit history...", "empty": "No audit events were found for this user.", "actor": "Actor", "system": "System", "passwordProtected": "Password values are never recorded or displayed." },
+    "validation": { "invalidEmail": "Enter a valid email address.", "nameRequired": "Full name is required for staff and radiologist accounts.", "passwordLength": "Password must contain at least 8 characters.", "passwordsMatch": "Passwords must match." },
+    "toasts": { "created": "User created", "createdDescription": "The new account is ready to use.", "createFailed": "Could not create user", "updated": "User updated", "updatedDescription": "The account changes were saved.", "updateFailed": "Could not update user", "passwordReset": "Password reset", "passwordResetDescription": "The new password was saved and existing sessions were revoked.", "passwordResetFailed": "Could not reset password" },
+    "errors": { "unauthorized": "Your session is no longer valid. Please sign in again.", "forbidden": "Only administrators can manage users.", "conflict": "That email is already assigned to another user.", "finalAdmin": "The final active administrator cannot be deactivated or changed to another role.", "nameRequired": "Staff and radiologist accounts must have a full name." }
   },
   "dashboard": {
     "title": "Dashboard",

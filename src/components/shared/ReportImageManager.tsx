@@ -213,12 +213,12 @@ export function ReportImageManager({
   const uploadImage = useUploadReportImage()
   const deleteImage = useDeleteReportImage()
 
-  // Business rules: only draft/amended allow management; radiologists only own reports
+  // Only the radiologist who owns an editable report can manage its images.
   const isEditableStatus = reportStatus === 'draft' || reportStatus === 'amended'
   const canManageImages =
     isEditableStatus &&
-    (currentUserRole === 'admin' ||
-      (currentUserRole === 'radiologist' && reportRadiologistId === currentUserId))
+    currentUserRole === 'radiologist' &&
+    reportRadiologistId === currentUserId
 
   const handleFiles = async (files: File[]) => {
     if (!canManageImages) return
